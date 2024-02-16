@@ -22,24 +22,6 @@ public class Model {
     private boolean video_error_or_removed;
     private String description;
 
-    public String getVideo_id() {
-        return video_id;
-    }
-    public void setVideo_id(String video_id) {
-        this.video_id = video_id;
-    }
-    public String getTrending_date() {
-        return trending_date;
-    }
-    public void setTrending_date(String trending_date) {
-        this.trending_date = trending_date;
-    }
-    public String getTitle() {
-        return title;
-    }
-    public void setTitle(String title) {
-        this.title = title;
-    }
     public short getCategory_id() {
         return category_id;
     }
@@ -67,9 +49,31 @@ public class Model {
     public String getThumbnail_link() {
         return thumbnail_link;
     }
+    public String getTitle() {
+        return title;
+    }
+    public String getTrending_date() {
+        return trending_date;
+    }
+    public String getVideo_id() {
+        return video_id;
+    }
     public long getViews() {
         return views;
     }
+    public boolean getComments_disabled()
+    {
+        return comments_disabled;
+    }
+    public boolean getRatings_disabled()
+    {
+        return ratings_disabled;
+    }
+    public boolean getVideo_error_or_removed()
+    {
+        return video_error_or_removed;
+    }
+    
     public void setCategory_id(short category_id) {
         this.category_id = category_id;
     }
@@ -103,8 +107,17 @@ public class Model {
     public void setThumbnail_link(String thumbnail_link) {
         this.thumbnail_link = thumbnail_link;
     }
+    public void setTitle(String title) {
+        this.title = title;
+    }
+    public void setTrending_date(String trending_date) {
+        this.trending_date = trending_date;
+    }
     public void setVideo_error_or_removed(boolean video_error_or_removed) {
         this.video_error_or_removed = video_error_or_removed;
+    }
+    public void setVideo_id(String video_id) {
+        this.video_id = video_id;
     }
     public void setViews(long views) {
         this.views = views;

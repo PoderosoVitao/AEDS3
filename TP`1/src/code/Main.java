@@ -3,12 +3,18 @@ package src.code;
 /*
  * Programa interface.
  * 
+ * Arq.java   = Contém metodos de manipulação de arquivos em memória secundária.
+ * MyIO.java  = Contém metodos de entrada e saida (I/O) de dados.
  * Model.java = Modelo de cada entidade do banco de dados.
  * Crud.java  = Apenas contém os metodos usados aqui.
  * Main.java  = Arquivo principal que deve ser compilado e executado.
  * 
  * Opções:
  * 0: Carrega o banco de dados.backup e formata para colocar e salvar todos os arquivos em 1.
+ */
+
+/*
+ * Interface gráfica feita com Swing Components
  */
 
 public class Main {
@@ -40,11 +46,13 @@ public class Main {
  */
 
 /* DD/MM/YYYY
- * 02/15/2024 12:00 - 0.1.0
+ * 02/15/2024 12:00 UTC-3 - 0.1.0
  *      -> Seleção da Base de Dados e criação dos arquivos: Model.java, Crud.Java. 
  *      -> Importação de Arq.java e MyIO.java, de AEDS2.
- * 02/15/2024 18:42 - 0.2.0
+ * 02/15/2024 18:42 UTC-3 - 0.2.0
  *      -> Implementação do Arquivo Model e criação dos metodos get e set.
+ * 02/16/2024 20:44 UTC-3 - 0.2.1
+ *      -> Correção de alguns metodos faltantes. Planejamento da interface gráfica.
 /*
  * TODO:
  * -> Interface Gráfica
