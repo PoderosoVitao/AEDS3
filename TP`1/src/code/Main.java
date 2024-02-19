@@ -21,6 +21,7 @@ public class Main {
     public static void main (String[] args) {
         clrScreen(); // Limpa o lixo da tela.
         greetUsr(); // Dá ao usuário as opções disponiveis.
+
     }
     
     /*
@@ -38,6 +39,8 @@ public class Main {
     public static void greetUsr ()
     {
         MyIO.println("Hi!");
+
+        MyIO.println("Please input the name of the database: ");
     }
 }
 
@@ -49,11 +52,23 @@ public class Main {
  * 02/15/2024 12:00 UTC-3 - 0.1.0
  *      -> Seleção da Base de Dados e criação dos arquivos: Model.java, Crud.Java. 
  *      -> Importação de Arq.java e MyIO.java, de AEDS2.
+ * 
  * 02/15/2024 18:42 UTC-3 - 0.2.0
  *      -> Implementação do Arquivo Model e criação dos metodos get e set.
  * 02/16/2024 20:44 UTC-3 - 0.2.1
  *      -> Correção de alguns metodos faltantes. Planejamento da interface gráfica.
-/*
+ * 
+ * 02/19/2024 20:34 UTC-3 - 0.3.0
+ *      |\_> Model.Java: Implementação do metodo printToString.
+ *      |\_> Crud.java : Implementação de metodos open e close, e esboço de funções.
+ *      |\_> MyDLL.java: Implementação de uma DLL para carregar o BD na memoria principal.
+ *      |                  Como devemos trabalhar na memoria segundaria, isso é um placeholder.
+ *      \_>  Main.java : Sem mudanças significativas
+ */
+
+
+
+ /*
  * TODO:
  * -> Interface Gráfica
  * -> CRUD
