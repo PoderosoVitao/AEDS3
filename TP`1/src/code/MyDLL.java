@@ -3,17 +3,24 @@ package src.code;
 public class MyDLL {
 
     private Node head;
+    private Node tail;
     private int amount;
 
     public MyDLL()
     {
         head = null;
+        tail = head;
         amount = 0;
     }
     public MyDLL(Model a)
     {
         head = new Node(a);
+        tail = head;
         amount = 1;
+    }
+
+    public int getSize() {
+        return amount;
     }
 
     // Finds a given node based off of its ID
@@ -44,16 +51,46 @@ public class MyDLL {
     }
 
     
-    // Adiciona sempre ao início. Por enquanto.
+    // Adiciona ao inicio
     public void addToDLL (Model a)
     {
         Node temp =  new Node(a);
-        if(head == null) head = temp;
+        if(head == null)
+        {
+            head = temp;
+            tail = head;
+        }
         else
         {
             temp.setNP(head, null);
             head.setPrev(temp);
             head = temp;
+        }
+        this.amount++;
+    }
+
+    // Adiciona ao final
+    public void addToDLLEnd (Model a)
+    {
+        Node temp =  new Node(a);
+        if(head == null)
+        {
+            head = temp;
+            tail = head;
+        }
+        if(tail == null)
+        {
+            tail = head;
+            while(tail.getNext() != null)
+            {
+                tail = tail.getNext();
+            }
+        }
+        if(tail != null)
+        {
+            temp.setNP(null, tail);
+            tail.setNext(temp);
+            tail = temp;
         }
         this.amount++;
     }
@@ -66,6 +103,7 @@ public class MyDLL {
         return true;
     }
 
+    // METHOD CRASHES AT TAIL OR HEAD. DO NOT USE THIS.
     public Model popDLL (String id)
     {
         Node target = seekInDLL(id);
@@ -74,6 +112,31 @@ public class MyDLL {
         // Mend the hole in the fabric of reality
         target.getNext().setPrev(target.getPrev());
         target.getPrev().setNext(target.getNext());
+
+        this.amount--;
+        return target.getData();
+    }
+
+    // METHOD CRASHES AT TAIL OR HEAD. DO NOT USE THIS.
+    public Model popDLL (int id)
+    {
+        Node target = seekInDLL(id);
+        if(target == null) return null;
+
+        // Mend the hole in the fabric of reality
+        target.getNext().setPrev(target.getPrev());
+        target.getPrev().setNext(target.getNext());
+
+        this.amount--;
+        return target.getData();
+    }
+
+    public Model popDLLStart ()
+    {
+        Node target = head;
+
+        head.getNext().setPrev(null);
+        head = head.getNext();
 
         this.amount--;
         return target.getData();

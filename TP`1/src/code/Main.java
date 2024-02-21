@@ -1,5 +1,11 @@
 package src.code;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+import javax.swing.SwingUtilities;
+
 /*
  * Programa interface.
  * 
@@ -8,41 +14,23 @@ package src.code;
  * Model.java = Modelo de cada entidade do banco de dados.
  * Crud.java  = Apenas contém os metodos usados aqui.
  * Main.java  = Arquivo principal que deve ser compilado e executado.
- * 
- * Opções:
- * 0: Carrega o banco de dados.backup e formata para colocar e salvar todos os arquivos em 1.
  */
 
-/*
- * Interface gráfica feita com Swing Components
- */
+// GLOBAL VAR THAT ENABLES EXTRA VERBOSE FOR DEBUGGING;
 
 public class Main {
     public static void main (String[] args) {
-        clrScreen(); // Limpa o lixo da tela.
-        greetUsr(); // Dá ao usuário as opções disponiveis.
 
-    }
-    
-    /*
-     * Clears the Terminal Screen
-     */
-    public static void clrScreen ()
-    {
-        //TODO: Improve this method
-        System.out.print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-    }
-
-    /*
-     * Greets the user and gives them options.
-     */
-    public static void greetUsr ()
-    {
-        MyIO.println("Hi!");
-
-        MyIO.println("Please input the name of the database: ");
+        // Invoca a GUI principal.
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new FolderNavigator().setVisible(true);
+            }
+        });  
     }
 }
+
 
 /*
  * Victor Hugo Braz - 817958
@@ -64,13 +52,14 @@ public class Main {
  *      |\_> MyDLL.java: Implementação de uma DLL para carregar o BD na memoria principal.
  *      |                  Como devemos trabalhar na memoria segundaria, isso é um placeholder.
  *      \_>  Main.java : Sem mudanças significativas
- */
-
-
-
- /*
+ * 02/21/2024 19:19 UTC-3 - 0.4.0
+ *      |\_> Model.Java: Mais construtores e alguns atributos novos.
+ *      |\_> Crud.java : Implementação do metodo ReloadDB, que recarrega a base de dados baseada na OriginalDB.csv
+ *      |\_> MyDLL.java: Implementação de novos metodos que permitem a remoção e inserção em outras posições
+ *      |                  
+ *      |\_> Main.java : Começando a implementação da GUI
+ *       \_> FolderNavigator.java: Implementação basica da classe que irá gerar o GUI.
  * TODO:
  * -> Interface Gráfica
  * -> CRUD
- *
  */
