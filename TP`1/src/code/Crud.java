@@ -37,7 +37,7 @@ public class Crud {
     }
 
     // Abre arquivo
-    private void openFile(char type)
+    public void openFile(char type)
     {
         if(validate())
         {
@@ -56,7 +56,7 @@ public class Crud {
     }
 
     // Fecha arquivo
-    private void closeFile()
+    public void closeFile()
     {
         Arq.close();
     }
@@ -70,6 +70,50 @@ public class Crud {
         if(temp == null) return false;
         return true;
     }
+
+    // Skips the first line of the .csv file, which only contains metadata.
+    public void skipMetadata()
+    {
+        Arq.readLine(); // Skip first line
+        Arq.readLine(); // Load first data
+    }
+
+    // Recarrega o arquivo de DB, condicionando o arquivo original.
+    public void reloadDB()
+    {
+        String buffer = "";
+        long db_id = 0;
+        Model temp = null;
+        MyDLL newLista = new MyDLL();
+        Arq.openRead(dbPath);
+        skipMetadata();
+
+        // Esse loop while basicamente adiciona todas as entradas validas para uma lista dupla-encadeada
+        // Acresenta o país em que o vídeo foi postado e cria um 'ID' do dataset, que é diferente do ID do video.
+        while (buffer.length() > 1)
+        { 
+            try{
+            temp = new Model(buffer, db_id, "United States of America");
+            db_id += 1;
+            newLista.addToDLLEnd(temp);
+            }catch (Exception e) {
+                //MyIO.println("Exception at ID: "+ db_id);
+            }finally{
+            buffer = Arq.readLine();
+            }
+        }
+        Arq.close();
+        MyIO.println("Done! " + db_id);
+
+        // Salvar como NewDB.csv
+        Arq.openWrite("NewDB.csv");
+        Arq.println("db_id,video_id,trending_date,title,channel_title,category_id,publish_time,tags,views,likes,dislikes,comment_count,thumbnail_link,comments_disabled,ratings_disabled,video_error_or_removed,country,description");
+        while (newLista.getSize() > 0) {
+            Arq.println(newLista.popDLLStart().printToCSV());
+        }
+        Arq.close();
+    }
+
 /*
     // Metodo que carrega o conteúdo do arquivo na memória, em uma DLL
 

@@ -6,11 +6,12 @@ package src.code;
 
 public class Model {
 
+    private long db_id;
     private String video_id;
     private String trending_date; // Change to date type later?
     private String title;
     private String channel_title;
-    private short category_id;   // From 0 to 44
+    private int category_id;   // From 0 to 44
     private String publish_time; // Change to date type later?
     private String tags;
     private long views;          // Change to int later?
@@ -22,8 +23,15 @@ public class Model {
     private boolean ratings_disabled;
     private boolean video_error_or_removed;
     private String description;
+    private String country;
 
-    public short getCategory_id() {
+    public void setDb_id(long db_id) {
+        this.db_id = db_id;
+    }
+    public long getDb_id() {
+        return db_id;
+    }
+    public int getCategory_id() {
         return category_id;
     }
     public String getChannel_title() {
@@ -74,8 +82,12 @@ public class Model {
     {
         return video_error_or_removed;
     }
+
+    public String getCountry() {
+        return country;
+    }
     
-    public void setCategory_id(short category_id) {
+    public void setCategory_id(int category_id) {
         this.category_id = category_id;
     }
     public void setChannel_title(String channel_title) {
@@ -124,18 +136,64 @@ public class Model {
         this.views = views;
     }
 
-
-
+    public void setCountry(String country) {
+        this.country = country;
+    }
 
     public void printToString()
     {
-        MyIO.println("( " + video_id               + " ## " + trending_date    + " ## "
-                          + title                  + " ## " + channel_title    + " ## " 
-                          + category_id            + " ## " + publish_time     + " ## " 
-                          + tags                   + " ## " + views            + " ## " 
-                          + likes                  + " ## " + dislikes         + " ## "
-                          + comment_count          + " ## " + thumbnail_link   + " ## "
-                          + comments_disabled      + " ## " + ratings_disabled + " ## " 
-                          + video_error_or_removed + " ## " + description       + " )");
+        MyIO.println("(# "+ db_id + ": " + video_id + " ## " + trending_date    + " ## "
+                          + title                   + " ## " + channel_title    + " ## " 
+                          + category_id             + " ## " + publish_time     + " ## " 
+                          + tags                    + " ## " + views            + " ## " 
+                          + likes                   + " ## " + dislikes         + " ## "
+                          + comment_count           + " ## " + thumbnail_link   + " ## "
+                          + comments_disabled       + " ## " + ratings_disabled + " ## " 
+                          + video_error_or_removed  + " ## " + country + " ## " + description + " )");
     }
+
+    public String printToCSV()
+    {
+        return (db_id + "," + video_id + "," + trending_date    + ","
+                          + title                   + "," + channel_title    + "," 
+                          + category_id             + "," + publish_time     + "," 
+                          + tags                    + "," + views            + "," 
+                          + likes                   + "," + dislikes         + ","
+                          + comment_count           + "," + thumbnail_link   + ","
+                          + comments_disabled       + "," + ratings_disabled + "," 
+                          + video_error_or_removed  + "," + country + "," + description);
+    }
+
+    // !!!!! ESSE CONSTRUTOR DEVE SER UTILIZADO APENAS PELA FUNÇÃO reloadDB !!!!!
+    // Ele le dados NAO TRATADOS.
+    public Model (String data, long db_id, String country)
+    {
+        String[] parts = data.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+        this.db_id                  = db_id   ;                        this.country          = country;
+        this.video_id               = parts[0];                        this.trending_date    = parts[1];
+        this.title                  = parts[2];                        this.channel_title    = parts[3];
+        this.category_id            = Integer.parseInt(parts[4]);      this.publish_time     = parts[5];
+        this.tags                   = parts[6];                        this.views            = Long.parseLong(parts[7]); 
+        this.likes                  = Long.parseLong(parts[8]);        this.dislikes         = Long.parseLong(parts[9]);
+        this.comment_count          = Integer.parseInt(parts[10]);     this.thumbnail_link   = parts[11];
+        this.comments_disabled      = Boolean.parseBoolean(parts[12]); this.ratings_disabled = Boolean.parseBoolean(parts[13]);
+        this.video_error_or_removed = Boolean.parseBoolean(parts[14]); this.description      = parts[15];
+    }
+
+    // Utilize apenas esse construtor com a base de dados tratada.
+    public Model (String data)
+    {
+        String[] parts = data.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+        this.db_id                  = Long.parseLong(parts[0]);        
+        this.video_id               = parts[1];                        this.trending_date    = parts[2];
+        this.title                  = parts[3];                        this.channel_title    = parts[4];
+        this.category_id            = Integer.parseInt(parts[5]);      this.publish_time     = parts[6];
+        this.tags                   = parts[7];                        this.views            = Long.parseLong(parts[8]); 
+        this.likes                  = Long.parseLong(parts[9]);        this.dislikes         = Long.parseLong(parts[10]);
+        this.comment_count          = Integer.parseInt(parts[11]);     this.thumbnail_link   = parts[12];
+        this.comments_disabled      = Boolean.parseBoolean(parts[13]); this.ratings_disabled = Boolean.parseBoolean(parts[14]);
+        this.video_error_or_removed = Boolean.parseBoolean(parts[15]); 
+        this.country                = parts[16];                       this.description      = parts[17];
+    }
+
 }
