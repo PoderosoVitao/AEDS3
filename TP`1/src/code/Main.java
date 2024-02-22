@@ -9,25 +9,18 @@ import javax.swing.SwingUtilities;
 /*
  * Programa interface.
  * 
- * Arq.java   = Contém metodos de manipulação de arquivos em memória secundária.
- * MyIO.java  = Contém metodos de entrada e saida (I/O) de dados.
- * Model.java = Modelo de cada entidade do banco de dados.
- * Crud.java  = Apenas contém os metodos usados aqui.
- * Main.java  = Arquivo principal que deve ser compilado e executado.
+ * Arquivo.java         = Contém metodos de manipulação de arquivos em memória secundária e primária.
+ * MyIO.java            = Contém metodos de entrada e saida (I/O) de dados.
+ * Model.java           = Modelo de cada entidade do dataset, e metodos para construção / tratamento.
+ * Crud.java            = Classe de abstração. Age como mensageiro entre Main e as outras classes, exceto a classe FolderNavigator
+ * Main.java            = Arquivo principal que deve ser compilado e executado.
+ * FolderNavigator.java = Classe para a GUI do programa. TODO.
  */
-
-// GLOBAL VAR THAT ENABLES EXTRA VERBOSE FOR DEBUGGING;
 
 public class Main {
     public static void main (String[] args) {
 
-        // Invoca a GUI principal.
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new FolderNavigator().setVisible(true);
-            }
-        });  
+        
     }
 }
 
@@ -59,7 +52,11 @@ public class Main {
  *      |                  
  *      |\_> Main.java : Começando a implementação da GUI
  *       \_> FolderNavigator.java: Implementação basica da classe que irá gerar o GUI.
- * TODO:
- * -> Interface Gráfica
- * -> CRUD
+ * 02/22/2024 13:59 UTC-3 - 0.5.0
+ *      |\_> Model.Java  : Construtor não-tratado modificado. Construtor tratado deprecado.
+ *      |\_> Crud.java   : Inicio da refatoração do arquivo. TODO: Metodo ReloadDB.              
+ *      |\_> Main.java   : Limpeza de metodos não usados. TODO.
+ *      |\_> Arq.java    : Arquivo excluido. Não utiliza RAF.
+ *      |\_> Arquivo.java: Nova classe que cuida de interações entre arquivos. Utiliza exclusivamente RAF.
+ *      \_> /tp1/Database/t  -> Bases de dados em outros países. Serão adicionadas à DB tratada eventualmente.
  */
