@@ -2,8 +2,8 @@ package src.code;
 
 public class MyDLL {
 
-    private Node head;
-    private Node tail;
+    protected Node head;
+    protected Node tail;
     private int amount;
 
     public MyDLL()
@@ -133,13 +133,22 @@ public class MyDLL {
 
     public Model popDLLStart ()
     {
-        Node target = head;
+        if(head != null)
+        {
+            Node target = head;
+            if(head == tail)
+            {
+                head = null; tail = null;
+                this.amount--;
+                return target.getData();
+            }
+            head.getNext().setPrev(null);
+            head = head.getNext();
 
-        head.getNext().setPrev(null);
-        head = head.getNext();
-
-        this.amount--;
-        return target.getData();
+            this.amount--;
+            return target.getData();
+        }
+        else return null;
     }
 
     public Model readID (String id)
@@ -162,6 +171,31 @@ public class MyDLL {
         }
     }
 
+
+    // Merge two DLLs together. The tail of THIS points to the head of the last, and vice versa.
+
+    public void mergeDLLs (MyDLL otherDLL)
+    {
+        if(this.head != null)
+        {
+            this.tail.setNext(otherDLL.head);
+            if(otherDLL.head != null)
+            {
+                otherDLL.head.setPrev(this.tail);
+                otherDLL.head = null;
+            }
+            if(otherDLL.tail != null) this.tail = otherDLL.tail;
+
+            this.amount += otherDLL.amount;
+        }
+        else if(otherDLL.head != null)
+        {
+            this.head = otherDLL.head;
+            this.tail = otherDLL.tail;
+            this.amount = otherDLL.amount;
+        }
+        else; //Both DLLs are null. Nothing happens.
+    }
 }
 
 class Node {

@@ -9,7 +9,7 @@ public class Model {
     // A ordem do modelo não necessariamente representa a ordem em que o conteúdo é salvo.
 
     private long db_id;                       // ID dentro da base de dados.
-    private short byteSize;                   // Tamanho do modelo em bytes
+    private int byteSize;                   // Tamanho do modelo em bytes
     private boolean lapide;                   // Registro lido é valido ou não?
     private String video_id;                  // ID do video.
     private String trending_date;             // Data em que o video ficou Trending
@@ -166,33 +166,75 @@ public class Model {
         if (data == null || data.length() < 1) {
             return retSTR;
         }
+
+        // Checamos se a data começa com "
+        // Se ela começar com ", nosso delimitador deve ser '",'
+        // Caso contrário, será apenas ,
+        if(delimitator == null)
+        {
+            if(data.charAt(0) == '"')
+            {
+                delimitator = "\",";
+            }
+            else
+            {
+                delimitator = ",";
+            }
+        }
         
         // Até o delimitador ser encontrado, copia em retSTR[0]
-        while (b4Delim && (index < data.length())) {
-            index_test = index;
-            index2 = 0;
-            while(data.charAt(index_test) == delimitator.charAt(index2)) // Match no primeiro caractere do delimitador
-            {
-                if(index2 == delimitator.length() - 1) // Match em TODOS os caracteres do delimitador.
+        // Mas antes, checamos se a string é um [none] para tratar de alguns erros que eu tive com tags vazias.
+        if(isNone(data, 0))
+        {
+            retSTR[0] = "\"[none]\"";
+            index = 7; // Pula o [none] e a virgula após.
+        }
+        else
+        {
+            while (b4Delim && (index < data.length())) {
+                index_test = index;
+                index2 = 0;
+                while(data.charAt(index_test) == delimitator.charAt(index2)) // Match no primeiro caractere do delimitador
                 {
-                    b4Delim = false;
-                    if(data.charAt(index) == '"') retSTR[0] += data.charAt(index); // Garante que a string terá um " no final.
-                    index = index_test + 1;
+                    if(index2 == delimitator.length() - 1) // Match em TODOS os caracteres do delimitador.
+                    {
+                        b4Delim = false;
+                        if(data.charAt(index) == '"') retSTR[0] += data.charAt(index); // Garante que a string terá um " no final.
+                        index = index_test + 1;
+                        break;
+                    }
+                    index_test += 1;
+                    index2 += 1;
                 }
-                index_test += 1;
-                index2 += 1;
-            }
-            if(b4Delim)
-            {
-                retSTR[0] += data.charAt(index);
+                if(b4Delim)
+                {
+                    retSTR[0] += data.charAt(index);
+                    index++;
+                }
             }
         }
         // Após encontrado o delimitador, copiar o resto da string em STR[1]
         while(index < data.length())
         {
             retSTR[1] += data.charAt(index);
+            index++;
         }
         return retSTR;
+    }
+
+    private static boolean isNone(String a, int index)
+    {
+        if(a.charAt(index) == '[' && a.charAt(index + 5) == ']')
+        {
+            if(a.charAt(index + 1) == 'n' &&
+               a.charAt(index + 2) == 'o' &&
+               a.charAt(index + 3) == 'n' &&
+               a.charAt(index + 4) == 'e')
+               {
+                return true;
+               }
+        }
+        return false;
     }
 
 
@@ -202,26 +244,30 @@ public class Model {
 
     public void printToString()
     {
-        MyIO.println("(# "+ db_id + ": " + video_id + " ## " + trending_date    + " ## "
-                          + title                   + " ## " + channel_title    + " ## " 
-                          + category_id             + " ## " + publish_time     + " ## " 
-                          + tags                    + " ## " + views            + " ## " 
-                          + likes                   + " ## " + dislikes         + " ## "
-                          + comment_count           + " ## " + thumbnail_link   + " ## "
-                          + comments_disabled       + " ## " + ratings_disabled + " ## " 
-                          + video_error_or_removed  + " ## " + getCountry()     + " ## " + description + " )");
+        MyIO.println("(# "+ db_id            + " ## "  + byteSize               + " ## "
+                          + lapide           + " ## "  + video_id               + " ## " 
+                          + trending_date    + " ## "  + title                  + " ## " 
+                          + channel_title    + " ## "  + category_id            + " ## " 
+                          + publish_time     + " ## "  + tags                   + " ## " 
+                          + views            + " ## "  + likes                  + " ## " 
+                          + dislikes         + " ## "  + comment_count          + " ## " 
+                          + thumbnail_link   + " ## "  + comments_disabled      + " ## " 
+                          + ratings_disabled + " ## "  + video_error_or_removed + " ## " 
+                          + getCountry()     + " ## "  + description            + " #)");
     }
 
     public String printToCSV()
     {
-        return (db_id + "," + video_id + "," + trending_date    + ","
-                          + title                   + "," + channel_title    + "," 
-                          + category_id             + "," + publish_time     + "," 
-                          + tags                    + "," + views            + "," 
-                          + likes                   + "," + dislikes         + ","
-                          + comment_count           + "," + thumbnail_link   + ","
-                          + comments_disabled       + "," + ratings_disabled + "," 
-                          + video_error_or_removed  + "," + getCountry()     + "," + description);
+        return (            db_id            + ","  + byteSize               + ","
+                          + lapide           + ","  + video_id               + "," 
+                          + trending_date    + ","  + title                  + "," 
+                          + channel_title    + ","  + category_id            + "," 
+                          + publish_time     + ","  + tags                   + "," 
+                          + views            + ","  + likes                  + "," 
+                          + dislikes         + ","  + comment_count          + "," 
+                          + thumbnail_link   + ","  + comments_disabled      + "," 
+                          + ratings_disabled + ","  + video_error_or_removed + "," 
+                          + getCountry()     + ","  + description);
     }
 
 
@@ -238,7 +284,7 @@ public class Model {
      * Não utilize esse construtor na base de dados tratada.
      */
 
-    public Model (String data, long db_id, String country)
+    public Model (String data, long db_id, char countryCode[])
     {
         String buffer[]; // recebe dados do stringSplit
         
@@ -249,26 +295,53 @@ public class Model {
          *  ",   E, caso ele não esteja entre parenteses, nosso separador será apenas , 
          */
         
-        this.video_id               =                      buffer[0] ; buffer = stringSplit(buffer[1], ","  );
-        this.trending_date          =                      buffer[0] ; buffer = stringSplit(buffer[1], "\",");
-        this.title                  =                      buffer[0] ; buffer = stringSplit(buffer[1], "\","); 
-        this.channel_title          =                      buffer[0] ; buffer = stringSplit(buffer[1], ","  );
-        this.category_id            =       Byte.parseByte(buffer[0]); buffer = stringSplit(buffer[1], ","  );
-        this.publish_time           =                      buffer[0] ; buffer = stringSplit(buffer[1], "\",");
-        this.tags                   =                      buffer[0] ; buffer = stringSplit(buffer[1], ","  );
-        this.views                  =       Long.parseLong(buffer[0]); buffer = stringSplit(buffer[1], ","  );
-        this.likes                  =       Long.parseLong(buffer[0]); buffer = stringSplit(buffer[1], ","  );
-        this.dislikes               =       Long.parseLong(buffer[0]); buffer = stringSplit(buffer[1], ","  );
-        this.comment_count          =     Integer.parseInt(buffer[0]); buffer = stringSplit(buffer[1], ","  );
-        this.thumbnail_link         =                      buffer[0] ; buffer = stringSplit(buffer[1], ","  );
-        this.comments_disabled      = Boolean.parseBoolean(buffer[0]); buffer = stringSplit(buffer[1], ","  );
-        this.ratings_disabled       = Boolean.parseBoolean(buffer[0]); buffer = stringSplit(buffer[1], ","  );
-        this.video_error_or_removed = Boolean.parseBoolean(buffer[0]); buffer = stringSplit(buffer[1], "\",");
+        this.video_id               =                      buffer[0] ; buffer = stringSplit(buffer[1], null);
+        this.trending_date          =                      buffer[0] ; buffer = stringSplit(buffer[1], null);
+        this.title                  =                      buffer[0] ; buffer = stringSplit(buffer[1], null); 
+        this.channel_title          =                      buffer[0] ; buffer = stringSplit(buffer[1], null);
+        this.category_id            =       Byte.parseByte(buffer[0]); buffer = stringSplit(buffer[1], null);
+        this.publish_time           =                      buffer[0] ; buffer = stringSplit(buffer[1], null);
+        this.tags                   =                      buffer[0] ; buffer = stringSplit(buffer[1], null);
+        this.views                  =       Long.parseLong(buffer[0]); buffer = stringSplit(buffer[1], null);
+        this.likes                  =       Long.parseLong(buffer[0]); buffer = stringSplit(buffer[1], null);
+        this.dislikes               =       Long.parseLong(buffer[0]); buffer = stringSplit(buffer[1], null);
+        this.comment_count          =     Integer.parseInt(buffer[0]); buffer = stringSplit(buffer[1], null);
+        this.thumbnail_link         =                      buffer[0] ; buffer = stringSplit(buffer[1], null);
+        this.comments_disabled      = Boolean.parseBoolean(buffer[0]); buffer = stringSplit(buffer[1], null);
+        this.ratings_disabled       = Boolean.parseBoolean(buffer[0]); buffer = stringSplit(buffer[1], null);
+        this.video_error_or_removed = Boolean.parseBoolean(buffer[0]);
         this.description            =                      buffer[1] ;
+    
+        // Esses dados são adicionados depois, e não estão na base de dados original.
+        this.db_id = db_id;  // ID em relação ao Dataset.
+        this.lapide = false; // Dados das DBs prontas nunca são laipde.
+        this.country = countryCode;
+        this.byteSize = this.calcSize();
     }
 
     // Construtor padrão para a base de dados tratada.
     public Model (String data)
     {
+    }
+
+    // Metodo que calcula o tamanho em bits.
+    private int calcSize()
+    {
+        int size = 0;
+        
+        // Tamanho fixo: 4 LONGS, 1 BYTE, 2 INT, 4 BOOL, 1 Char[2](Sempre será uma letra maiuscula, logo, 2 bytes bastam por char)
+        size =              4*8 +   1*1 +   2*4 +  1*4  +  2*2;
+        
+        // Tamanho variavel: 8 Strings, cada char pode ter até 4 bytes em UTF-8
+        size += (4 * video_id.length());
+        size += (4 * trending_date.length());
+        size += (4 * title.length());
+        size += (4 * channel_title.length());
+        size += (4 * publish_time.length());
+        size += (4 * tags.length());
+        size += (4 * thumbnail_link.length());
+        size += (4 * description.length());
+
+        return size;
     }
 }
