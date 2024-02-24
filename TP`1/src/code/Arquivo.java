@@ -1,4 +1,6 @@
 package src.code;
+import java.io.IOError;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 
 // Classe que gerencia as operações do arquivo. Serve de API para a classe CRUD.
@@ -23,40 +25,35 @@ public class Arquivo {
         this.filepath = filepath;
     }
 
-    public void openWrite()
+    public void     openWrite() throws IOException
     {
-        try
-        {
-            RAF = new RandomAccessFile(filepath, "w");
-        }
-        catch(Exception e)
-        {
-            MyIO.println("Erro ao abrir arquivo no endereço " +filepath);
-        }
+        RAF = new RandomAccessFile(filepath, "rw");
     }
 
-    public void openRead()
+    public void openRead() throws IOException
     {
-        try
-        {
-            RAF = new RandomAccessFile(filepath, "r");
-        }
-        catch(Exception e)
-        {
-            MyIO.println("Erro ao abrir arquivo no endereço " +filepath);
-        }
+        RAF = new RandomAccessFile(filepath, "r");
     }
 
-    public void openEdit()
+    public void seek(long n) throws IOException
     {
-        try
-        {
-            RAF = new RandomAccessFile(filepath, "rw");
-        }
-        catch(Exception e)
-        {
-            MyIO.println("Erro ao abrir arquivo no endereço " +filepath);
-        }
+        RAF.seek(n);
+    }
+
+    public void writeToFile(String a) throws IOException
+    {
+        RAF.writeBytes(a);
+    }
+
+    // Metodo que trunca o arquivo.
+    public void truncateFile() throws IOException
+    {
+        RAF.setLength(RAF.getFilePointer());
+    }
+
+    public void truncateFile(int len) throws IOException
+    {
+        RAF.setLength(len);
     }
 
     public void close()
@@ -72,18 +69,10 @@ public class Arquivo {
         }
     }
 
-    public String readLine()
+    public String readLine() throws IOException
     {
         String returnString = "";
-        try
-        {
-            returnString += RAF.readLine();
-        }
-        catch(Exception e)
-        {
-            MyIO.println("Erro ao ler linha no RAF.");
-            return returnString;
-        }
+        returnString += RAF.readLine();
         return returnString;
     }
 
@@ -97,9 +86,10 @@ public class Arquivo {
      * Se não, lemos a proxima e adicionamos-a.
      */
 
-    public String readLineContinuous()
+    public String readLineContinuous() throws IOException
     {
         String returnString = "";
+        returnString += readLine();
 
         while (returnString.charAt(returnString.length()-1) != '"') {
             returnString += readLine();

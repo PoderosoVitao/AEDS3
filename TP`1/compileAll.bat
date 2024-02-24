@@ -1,2 +1,2 @@
 @echo off
-javac src/code/*.java
+javac src/code/Main.java
