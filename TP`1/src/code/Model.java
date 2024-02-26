@@ -29,6 +29,15 @@ public class Model {
     private String description;               // Descrição do video
     private char[] country;                   // Pais origem do video (Sempre 2 Bytes, 2 caracteres (US/CA/BR/...))
 
+    public int getByteSize() {
+        return byteSize;
+    }
+    public void setByteSize(int byteSize) {
+        this.byteSize = byteSize;
+    }
+    public void setLapide(boolean lapide) {
+        this.lapide = lapide;
+    }
     public void setDb_id(long db_id) {
         this.db_id = db_id;
     }
@@ -85,6 +94,10 @@ public class Model {
     public boolean getVideo_error_or_removed()
     {
         return video_error_or_removed;
+    }
+    public boolean getLapide()
+    {
+        return lapide;
     }
 
     public String getCountry() {
@@ -275,15 +288,8 @@ public class Model {
      * Construtores
      */
 
-    // !!!!! ESSE CONSTRUTOR DEVE SER UTILIZADO APENAS PELA FUNÇÃO reloadDB !!!!!
-    /*
-     * Esse construtor é utilizado APENAS e ESTRITAMENTE pelo metodo reloadDB da classe CRUD.
-     * Ele presume que os dados não estão tratados e não possuem os campos db_id, country, byteSize e lapide,
-     * que existem apenas na base de dados tratada.
-     * 
-     * Não utilize esse construtor na base de dados tratada.
-     */
 
+    // Construtor usado para registros não-tratados.
     public Model (String data, long db_id, char countryCode[])
     {
         String buffer[]; // recebe dados do stringSplit
@@ -333,15 +339,30 @@ public class Model {
         size =              4*8 +   1*1 +   2*4 +  1*4  +  2*2;
         
         // Tamanho variavel: 8 Strings, cada char pode ter até 4 bytes em UTF-8
-        size += (4 * video_id.length());
-        size += (4 * trending_date.length());
-        size += (4 * title.length());
-        size += (4 * channel_title.length());
-        size += (4 * publish_time.length());
-        size += (4 * tags.length());
-        size += (4 * thumbnail_link.length());
-        size += (4 * description.length());
+        try {
+            size += video_id.getBytes("UTF-8").length;
+            size += trending_date.getBytes("UTF-8").length;
+            size += title.getBytes("UTF-8").length;
+            size += channel_title.getBytes("UTF-8").length;
+            size += publish_time.getBytes("UTF-8").length;
+            size += tags.getBytes("UTF-8").length;
+            size += thumbnail_link.getBytes("UTF-8").length;
+            size += description.getBytes("UTF-8").length;
+            size += (8 * 2); // Two bytes for the size of each string.
+        } catch (Exception e) {
+            MyIO.println("Error getting byte Size!");
+        }
 
         return size;
+    }
+
+    // Retorna uma string que pode ser usada para construir um Model.
+    public static String readModel()
+    {
+        MyIO.println("Escreva um registro novo no formato: video_id,trending_date,title,channel_title,category_id,publish_time,tags,views,likes,dislikes,comment_count,thumbnail_link,comments_disabled,ratings_disabled,video_error_or_removed,description");
+        MyIO.println("Os campos comments_disabled,ratings_disabled,video_error_or_removed devem ser apenas 'true' ou 'false");
+        MyIO.println("Favor preencher estes campos apenas com números: category_id, views, likes, dislikes,comment_count");
+        String data = MyIO.readLine();
+        return data;
     }
 }

@@ -1,11 +1,5 @@
 package src.code;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
-import javax.swing.SwingUtilities;
-
 /*
  * Arquivo.java         = Contém metodos de manipulação de arquivos em memória secundária e primária.
  * MyIO.java            = Contém metodos de entrada e saida (I/O) de dados.
@@ -20,6 +14,7 @@ public class Main {
         
         Crud myCrud = new Crud("./mynewDB");
         myCrud.reloadDB();
+        myCrud.findLastID();
         
     }
 }
@@ -90,4 +85,17 @@ public class Main {
  *      A leitura do dataset 'INvideos' se mostrou extremamente lenta em relação aos outros. Além disso, a leitura em geral
  *      está um pouco lenta. A minha hipotese é que pode ser melhor ler tudo de uma só vez em uma só operação de I/O, em vez de ler varias vezes
  *      com o metodo recursiveLineRead(). Irei testar isso na proxima iteração.
+ * 02/25/2024 22:05 UTC-3 - 0.7.0
+ *      |\_> Model.Java  : Refatoração do metodo GetBytes, levando em conta que:
+ *                         -> Há um espaço de 7 bytes 'inutil' no ínicio do arquivo que deve ser levado em conta para a leitura precisa do ID
+ *                         -> Cada String adiciona 2 bytes a mais ao arquivo, para marcar seu tamanho.
+ *      |\_> Crud.java   : Muitas mudanças que possibilitam a criação do metodo Create, e também buscar registros por ID dentro do arquivo em bytes.
+ *      |\_> Main.java   : Alteração com inclusão de metodos teste.
+ *      |\_> Arquivo.java: Grandes mudanças. Passamos a usar a FileOutputStream e a DataOutputStream em vez de RAF, para podermos escrever a Bytes diretamente.
+ *                          Isso reduz as dores de cabeça, cria arquivos menores e possibilita a leitura byte a byte.
+ *      \_>  MyDLL.java  : Algumas mudanças no metodo Pop. Ainda preciso fazer alguns ajustes nos outros metodos para prevenir comportamento indefinido.
+ *                            Além disso, novo metodo merge que acresenta uma DLL à outra. 
+ *      Observações:
+ *      Estava equivocado. A base de dados ruim era, na verdade, a 'JPvideos.csv'. Após remove-lá,o metodo seek do CRUD passou a funcionar, 
+ *      E também aumentamos consideravelmente o tempo de leitura. Irei tentar fazer alterações para incorpora-la denovo à DB tratada.
  */
