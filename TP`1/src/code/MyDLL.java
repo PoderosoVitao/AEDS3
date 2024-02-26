@@ -158,6 +158,7 @@ public class MyDLL {
         return target.getData();
     }
 
+    // reads an interval from ]a to b[
     public void readIntervalInclusive (int a, int b)
     {
         int smaller = (a < b) ? a : b;

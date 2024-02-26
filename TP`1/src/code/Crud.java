@@ -11,18 +11,15 @@ import java.io.File;
 public class Crud {
 
     private String filepath; // Base de dados tratada.
-    private Arquivo header;  // Cabeçote
 
     private Crud()
     {
         filepath = null;
-        header = null;
     }
 
     public Crud(String filepath)
     {
         this.filepath = filepath;
-        this.header = new Arquivo(this.filepath);
     }
 
     // Checa se o arquivo tem um caminho valido.
@@ -36,6 +33,7 @@ public class Crud {
     // Esse metodo sempre sobreescreve todo o arquivo.
     public boolean reloadDB()
     {
+        Arquivo header = new Arquivo(filepath);
         String backupDBsAddress = "E:/Software/Programming/Github/AEDS3/TP`1/Database/t/";
         if(this.exists())
         {
@@ -50,9 +48,8 @@ public class Crud {
 
             header.openWrite();
             while (allEntriesFromBackupDBs.getSize() > 0) {
-                header.writeToFile(allEntriesFromBackupDBs.popDLLStart().printToCSV());
+                header.writeModel(allEntriesFromBackupDBs.popDLLStart());
             }
-            header.truncateFile();
 
         } catch (Exception e) {
             e.printStackTrace(System.out);
@@ -69,7 +66,7 @@ public class Crud {
     public static MyDLL loadBackupDBIntoDLL (String path)
     {
         String[] dbNames = {"USvideos.csv", "DEvideos.csv", "FRvideos.csv",
-                            "GBvideos.csv", "INvideos.csv", "JPvideos.csv",
+                            "GBvideos.csv", "INvideos.csv", /*"JPvideos.csv",*/
                             "KRvideos.csv", "MXvideos.csv", "RUvideos.csv"};
 
         char[][] countryCodes = {
@@ -77,8 +74,8 @@ public class Crud {
             {'D', 'E'}, // Row 1
             {'F', 'R'}, // Row 2
             {'G', 'B'}, // Row 3
-            {'I', 'N'}, // Row 4 // IN is abnormally slow for some reason.
-            {'J', 'P'}, // Row 5
+            {'I', 'N'}, // Row 4
+          //{'J', 'P'}, // Row 5 // JP is abnormally slow for some reason. // Removed for performance
             {'K', 'R'}, // Row 6
             {'M', 'X'}, // Row 7
             {'R', 'U'}  // Row 8
@@ -86,11 +83,12 @@ public class Crud {
 
         MyDLL returnDLL = new MyDLL();
         MyDLL tempDLL = null;
-        for (int i = 0; i < 9; i++)
+        int db_id[] = {0};
+        for (int i = 0; i < 8; i++)
         {   
             try
             {
-                tempDLL = loadBackupDBIntoDLL (path + dbNames[i], countryCodes[i]);
+                tempDLL = loadBackupDBIntoDLL (path + dbNames[i], countryCodes[i], db_id);
                 returnDLL.mergeDLLs(tempDLL);
             } catch (Exception e) {
                 
@@ -100,34 +98,88 @@ public class Crud {
     }
 
     // Metodo que carrega e insere cada linha em uma DLL.
-    public static MyDLL loadBackupDBIntoDLL (String path, char code[]) throws Exception
+    public static MyDLL loadBackupDBIntoDLL (String path, char code[], int[] db_id) throws Exception
     {
         Model tempModel = null;
         MyDLL returnList = new MyDLL();
         Arquivo dataset = new Arquivo(path);
         String loadBuffer = "";
-        dataset.openRead();
-        dataset.readLine(); // Pular a primeira linha, que sempre contém apenas metadados.
+        dataset.openReadUntreated();
+        dataset.readLineUntreated(); // Pular a primeira linha, que sempre contém apenas metadados.
         loadBuffer = dataset.readLineContinuous(); // Ler a segunda linha, que já contem informações.
-        int db_id = 0;
-        while(loadBuffer.length() > 2 && db_id < 25)
+        int i = 0; // Limits how many entries to read per dataset.
+        while(loadBuffer.length() > 2 && i < 5)
         {
             try
             {
-                tempModel = new Model(loadBuffer, db_id, code);
+                tempModel = new Model(loadBuffer, db_id[0], code);
                 returnList.addToDLLEnd(tempModel);
-                db_id += 1;
+                db_id[0] += 1;
+                i++;
             } catch (Exception e) {
                 MyIO.println("Error at ID: " + db_id);
             } finally {
                 loadBuffer = dataset.readLineContinuous();
             }
-            //MyIO.println("Loaded: #" + db_id);
+            MyIO.println("Loaded: #" + db_id[0]);
         }
         return returnList;
     }
 
+    // Metodo que acha o ultimo ID em um arquivo, e o retorna.
+    public long findLastID()
+    {
+        long bytesSkipped = 7; // Why do we have 7 empty bytes of space at the start and at the end of each register?
+        File file = new File(filepath);
+        long arqLength = file.length();
+        Arquivo header = new Arquivo(filepath);
+        try {
+            header.openRead();
+        } catch (Exception e) {
+            MyIO.println("Exceção findLastID");
+        }
+
+        // Iterar sequencialmente até o final.
+        try{
+            long tempID = header.dosIN.readLong();
+            int byteSize = header.dosIN.readInt();
+            bytesSkipped += 12; // 4 bytes for an int, 8 bytes for the long;
+            while (bytesSkipped + byteSize <= arqLength) {
+                bytesSkipped += byteSize;
+                header.arqIN.skip(byteSize - 12); // For SOME reason there are 7 bytes of blank space between registers.
+                tempID = header.dosIN.readLong();
+                byteSize = header.dosIN.readInt();
+            }
+            header.close();
+            return tempID;
+        } catch (Exception e) {
+            header.close();
+            MyIO.println("Error on FindLastID");
+        }   
+        header.close();
+        return -1;
+    }
+
     // Metodo CREATE
+    public boolean create ()
+    {
+
+        MyIO.println(this.findLastID());
+
+        /* // prompt for model details
+        String data = Model.readModel();
+
+        MyIO.println("Escreva o codigo do país em que o video foi publicado (US, UK, NK, SK, BR, DE...)");
+        String countrycode = MyIO.readLine();
+
+        int lastId;
+
+        Model a = */
+
+        return true;
+    }
+
+    // Overload do metodo Create quando o metodo Update estoura o tamanho alocado.
 
     // Metodo READ
 

@@ -1,15 +1,29 @@
 package src.code;
-import java.io.IOError;
+import java.io.FileReader;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
 // Classe que gerencia as operações do arquivo. Serve de API para a classe CRUD.
-// Utiliza RAF.
 
 public class Arquivo {
     
     private String filepath;
-    private RandomAccessFile RAF;
+
+    // Usadas para a DS tratada
+
+    public FileOutputStream arqOUT;
+    public DataOutputStream dosOUT;
+    public FileInputStream arqIN;
+    public DataInputStream dosIN;
+
+    // Usadas para os DS não tratados
+    public BufferedReader buffIN;
+    
 
     public Arquivo()
     {
@@ -19,60 +33,116 @@ public class Arquivo {
     public Arquivo(String filepath)
     {
         this.filepath = filepath;
+        arqIN  = null;
+        dosIN  = null;
+        arqOUT = null;
+        arqOUT = null;
+        buffIN = null;
     }
 
     public void setFilepath(String filepath) {
         this.filepath = filepath;
     }
 
-    public void     openWrite() throws IOException
+    public void openWrite() throws IOException
     {
-        RAF = new RandomAccessFile(filepath, "rw");
+        arqOUT = new FileOutputStream(filepath);
+        dosOUT = new DataOutputStream(arqOUT);
+    }
+
+    public void openWriteAppend() throws IOException
+    {
+        arqOUT = new FileOutputStream(filepath, true);
+        dosOUT = new DataOutputStream(arqOUT);
     }
 
     public void openRead() throws IOException
     {
-        RAF = new RandomAccessFile(filepath, "r");
+        arqIN = new FileInputStream(filepath);
+        dosIN = new DataInputStream(arqIN);
     }
 
-    public void seek(long n) throws IOException
+    // Metodo que le das DBs backup.
+    public void openReadUntreated() throws IOException
     {
-        RAF.seek(n);
+        buffIN = new BufferedReader(new FileReader(filepath));
     }
 
-    public void writeToFile(String a) throws IOException
+    // Escreve como um fluxo de bytes a partir de um modelo.
+    public void writeModel(Model a) throws IOException
     {
-        RAF.writeBytes(a);
-    }
 
-    // Metodo que trunca o arquivo.
-    public void truncateFile() throws IOException
-    {
-        RAF.setLength(RAF.getFilePointer());
-    }
+        // DB_ID and ByteSize are written first, to allow finding indexes and skipping them effectively.
 
-    public void truncateFile(int len) throws IOException
-    {
-        RAF.setLength(len);
+        dosOUT.writeLong(a.getDb_id());
+        dosOUT.writeInt(a.getByteSize());
+
+        // Then attributes with a fixed size are written.
+
+        dosOUT.writeBoolean(a.getLapide());
+
+        dosOUT.writeByte(a.getCategory_id());
+
+        dosOUT.writeInt(a.getComment_count());
+
+        dosOUT.writeLong(a.getViews());
+        dosOUT.writeLong(a.getLikes());
+        dosOUT.writeLong(a.getDislikes());
+
+        String country = a.getCountry();
+        dosOUT.writeChar(country.charAt(0));
+        dosOUT.writeChar(country.charAt(1));
+
+        dosOUT.writeBoolean(a.getComments_disabled());
+        dosOUT.writeBoolean(a.getRatings_disabled());
+        dosOUT.writeBoolean(a.getVideo_error_or_removed());
+
+        // Then variable size strings.
+
+        dosOUT.writeUTF(a.getVideo_id());
+        dosOUT.writeUTF(a.getTrending_date());
+        dosOUT.writeUTF(a.getTitle());
+        dosOUT.writeUTF(a.getChannel_title());
+        dosOUT.writeUTF(a.getPublish_time());
+        dosOUT.writeUTF(a.getTags());
+        dosOUT.writeUTF(a.getThumbnail_link());
+        dosOUT.writeUTF(a.getDescription());
     }
 
     public void close()
     {
-        try
-        {
-            RAF.close();
-            RAF = null;
-        }
-        catch(Exception e)
-        {
-            MyIO.println("Erro ao fechar RAF.");
+        try {
+            if (arqIN != null) {
+                arqIN.close();
+                arqIN = null;
+            }
+            if (arqOUT != null) {
+                arqOUT.close();
+                arqOUT = null;
+            }
+            if (dosIN != null) {
+                dosIN.close();
+                dosIN = null;
+            }
+            if (dosOUT != null) {
+                dosOUT.close();
+                dosOUT = null;
+            }
+            if (buffIN != null) {
+                buffIN.close();
+                buffIN = null;
+            }
+        } catch (Exception e) {
+            MyIO.println("Error closing some file streams.");
         }
     }
 
-    public String readLine() throws IOException
+    //
+
+    public String readLineUntreated() throws IOException
     {
         String returnString = "";
-        returnString += RAF.readLine();
+        returnString += buffIN.readLine();
         return returnString;
     }
 
@@ -89,10 +159,10 @@ public class Arquivo {
     public String readLineContinuous() throws IOException
     {
         String returnString = "";
-        returnString += readLine();
+        returnString += readLineUntreated();
 
         while (returnString.charAt(returnString.length()-1) != '"') {
-            returnString += readLine();
+            returnString += readLineUntreated();
         }
 
         return returnString;
