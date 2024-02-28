@@ -11,3 +11,21 @@ Esse repositório está dividido em diferentes TPs.
 
 * TP 1:
 Base de dados de acesso sequencial.
+Estrutura de arquivos:
+
+Main.java: Arquivo principal que age como interface.
+
+FolderNavigator.java: Arquivo em progresso que deveria funcionar como interface grafica.
+
+MyDLL.java: Arquivo que permite a utilização de uma DoubleLinkedList para operações em memória primaria.
+
+Model.java: Arquivo que tem o modelo dos dados utilizados nos datasets. Também inclui metodos para tratamento.
+
+Arquivo.java: Arquivo que contém metodos para a carga/descarga de arquivos CSV, assim como escrita e leitura.
+
+Crud.java: Arquivo que chama os metodos das outras classes e permite as operações de CRUD na DB tratada.
+
+MyIO.java: Contém metodos basicos de I/O
+
+Database: DB Tratada
+Database/t : Datasets backup/originais.

@@ -86,6 +86,7 @@ public class Crud {
         int db_id[] = {0};
         for (int i = 0; i < 8; i++)
         {   
+            MyIO.println("Loading from DB: " + dbNames[i]);
             try
             {
                 tempDLL = loadBackupDBIntoDLL (path + dbNames[i], countryCodes[i], db_id);
@@ -108,8 +109,12 @@ public class Crud {
         dataset.readLineUntreated(); // Pular a primeira linha, que sempre contém apenas metadados.
         loadBuffer = dataset.readLineContinuous(); // Ler a segunda linha, que já contem informações.
         int i = 0; // Limits how many entries to read per dataset.
-        while(loadBuffer.length() > 2 && i < 5)
+        while(loadBuffer.length() > 2 && (loadBuffer.equals("null") == false))
         {
+            if(db_id[0] % 1000 == 0)
+            {
+                MyIO.println("Loading: #" + db_id[0] + " to #"+ (db_id[0] + 1000) + "/232000");
+            }
             try
             {
                 tempModel = new Model(loadBuffer, db_id[0], code);
@@ -117,11 +122,10 @@ public class Crud {
                 db_id[0] += 1;
                 i++;
             } catch (Exception e) {
-                MyIO.println("Error at ID: " + db_id);
+                MyIO.println("Error at ID: " + db_id[0]);
             } finally {
                 loadBuffer = dataset.readLineContinuous();
             }
-            MyIO.println("Loaded: #" + db_id[0]);
         }
         return returnList;
     }
@@ -129,7 +133,7 @@ public class Crud {
     // Metodo que acha o ultimo ID em um arquivo, e o retorna.
     public long findLastID()
     {
-        long bytesSkipped = 7; // Why do we have 7 empty bytes of space at the start and at the end of each register?
+        long bytesSkipped = 0;
         File file = new File(filepath);
         long arqLength = file.length();
         Arquivo header = new Arquivo(filepath);
@@ -144,9 +148,9 @@ public class Crud {
             long tempID = header.dosIN.readLong();
             int byteSize = header.dosIN.readInt();
             bytesSkipped += 12; // 4 bytes for an int, 8 bytes for the long;
-            while (bytesSkipped + byteSize <= arqLength) {
+            while ((bytesSkipped + byteSize) <= arqLength) {
                 bytesSkipped += byteSize;
-                header.arqIN.skip(byteSize - 12); // For SOME reason there are 7 bytes of blank space between registers.
+                header.arqIN.skip(byteSize - 12);
                 tempID = header.dosIN.readLong();
                 byteSize = header.dosIN.readInt();
             }

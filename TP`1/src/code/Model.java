@@ -1,5 +1,7 @@
 package src.code;
 
+import java.io.UTFDataFormatException;
+
 /*
  * Arquivo que descreve o modelo das entities do dataset usado.
  */
@@ -325,6 +327,11 @@ public class Model {
         this.byteSize = this.calcSize();
     }
 
+    public Model()
+    {
+
+    }
+
     // Construtor padrão para a base de dados tratada.
     public Model (String data)
     {
@@ -340,20 +347,36 @@ public class Model {
         
         // Tamanho variavel: 8 Strings, cada char pode ter até 4 bytes em UTF-8
         try {
-            size += video_id.getBytes("UTF-8").length;
-            size += trending_date.getBytes("UTF-8").length;
-            size += title.getBytes("UTF-8").length;
-            size += channel_title.getBytes("UTF-8").length;
-            size += publish_time.getBytes("UTF-8").length;
-            size += tags.getBytes("UTF-8").length;
-            size += thumbnail_link.getBytes("UTF-8").length;
-            size += description.getBytes("UTF-8").length;
+            size += getActualBytes(video_id);
+            size += getActualBytes(trending_date);
+            size += getActualBytes(title);
+            size += getActualBytes(channel_title);
+            size += getActualBytes(publish_time);
+            size += getActualBytes(tags);
+            size += getActualBytes(thumbnail_link);
+            size += getActualBytes(description);
             size += (8 * 2); // Two bytes for the size of each string.
+            
         } catch (Exception e) {
             MyIO.println("Error getting byte Size!");
         }
 
         return size;
+    }
+
+    // Apos quase coringar, descobri que a função getBytes não pega os bytes corretos de emoticons.
+    // Então tive que criar uma função que funciona para pegar o tamanho correto de emoticons.
+    public static int getActualBytes(String a)
+    {
+        int strlen = a.length();
+        int utflen = strlen; // optimized for ASCII
+
+        for (int i = 0; i < strlen; i++) {
+            int c = a.charAt(i);
+            if (c >= 0x80 || c == 0)
+                utflen += (c >= 0x800) ? 2 : 1; // Emojis tem 2 chars por char... Se é que isso faz sentido.
+        }
+        return utflen;
     }
 
     // Retorna uma string que pode ser usada para construir um Model.

@@ -161,7 +161,7 @@ public class Arquivo {
         String returnString = "";
         returnString += readLineUntreated();
 
-        while (returnString.charAt(returnString.length()-1) != '"') {
+        while ((returnString.charAt(returnString.length()-1)) != '"' && (returnString.equals(null) == false) && (returnString.length() > 10)) {
             returnString += readLineUntreated();
         }
 

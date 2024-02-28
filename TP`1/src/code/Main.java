@@ -98,4 +98,11 @@ public class Main {
  *      Observações:
  *      Estava equivocado. A base de dados ruim era, na verdade, a 'JPvideos.csv'. Após remove-lá,o metodo seek do CRUD passou a funcionar, 
  *      E também aumentamos consideravelmente o tempo de leitura. Irei tentar fazer alterações para incorpora-la denovo à DB tratada.
+  * 02/28/2024 22:05 UTC-3 - 0.8.0
+ *      |\_> DBs  : DB tratada disponivel por meio do metodo reloadDB.
+ *      Não será adicionada ao Github por questão de tamanho. Basta re-compilar.
+ *      |\_> Crud.java   : Leitura foi consertada. Metodo reloadDB agora informa o úsuario do progresso a cada 1000 registros.
+ *      |\_> Arquivo.java: Refatora o metodo readContinuous para parar de ler ao chegar no fim do arquivo.
+ *      \_>  Model.java  : O metodo Get_Bytes não estava funcionando com caracteres Emoji, então tive que
+ *            refaze-lo de acordo com as minhas necessidades. Agora parece, finalmente, estar tudo certo com o Create.
  */
