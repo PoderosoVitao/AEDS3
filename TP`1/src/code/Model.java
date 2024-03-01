@@ -1,5 +1,6 @@
 package src.code;
 
+import java.io.RandomAccessFile;
 import java.io.UTFDataFormatException;
 
 /*
@@ -259,16 +260,27 @@ public class Model {
 
     public void printToString()
     {
-        MyIO.println("(# "+ db_id            + " ## "  + byteSize               + " ## "
-                          + lapide           + " ## "  + video_id               + " ## " 
-                          + trending_date    + " ## "  + title                  + " ## " 
-                          + channel_title    + " ## "  + category_id            + " ## " 
-                          + publish_time     + " ## "  + tags                   + " ## " 
-                          + views            + " ## "  + likes                  + " ## " 
-                          + dislikes         + " ## "  + comment_count          + " ## " 
-                          + thumbnail_link   + " ## "  + comments_disabled      + " ## " 
-                          + ratings_disabled + " ## "  + video_error_or_removed + " ## " 
-                          + getCountry()     + " ## "  + description            + " #)");
+        MyIO.println("## 1 : Lapide:                ## " + this.lapide                       + "\n" +
+                     "## 2 : Database ID:           ## " + this.db_id                        + "\n" +
+                     "## 3 : Size in Bytes:         ## " + this.byteSize                     + "\n" +
+                     "## 4 : Category ID:           ## " + this.category_id                  + "\n" +
+                     "## 5 : Comment Count:         ## " + this.comment_count                + "\n" +
+                     "## 6 : View:                  ## " + this.views                        + "\n" +
+                     "## 7 : Likes:                 ## " + this.likes                        + "\n" +
+                     "## 8 : Dislikes:              ## " + this.dislikes                     + "\n" +
+                     "## 9 : Country Code:          ## " + this.country[0] + this.country[1] + "\n" +
+                     "## 10: Comments Disabled:     ## " + this.comments_disabled            + "\n" +
+                     "## 11: Ratings Disabled:      ## " + this.ratings_disabled             + "\n" +
+                     "## 12: Video Error or Removed ## " + this.video_error_or_removed       + "\n" +
+                     "## 13: Youtube Video ID:      ## " + this.video_id                     + "\n" +
+                     "## 14: Trending Date:         ## " + this.trending_date                + "\n" +
+                     "## 15: Title:                 ## " + this.title                        + "\n" +
+                     "## 16: Author:                ## " + this.channel_title                + "\n" +
+                     "## 17: Publish Time:          ## " + this.publish_time                 + "\n" +
+                     "## 18: Tags:                  ## " + this.tags                         + "\n" +
+                     "## 19: Thumbnail Link:        ## " + this.thumbnail_link               + "\n" +
+                     "## 20: Description:           ## " + this.description                  + "\n"
+        );
     }
 
     public String printToCSV()
@@ -327,14 +339,53 @@ public class Model {
         this.byteSize = this.calcSize();
     }
 
-    public Model()
+    public Model(Model a)
     {
-
+        this.lapide = a.lapide; this.db_id = a.db_id; this.byteSize = a.byteSize;
+        this.category_id = a.category_id; this.comment_count = a.comment_count;
+        this.views = a.views; this.likes = a.likes; this.dislikes = a.dislikes;
+        this.country = a.country; this.comments_disabled = a.comments_disabled;
+        this.ratings_disabled = a.ratings_disabled; this.video_error_or_removed = a.video_error_or_removed;
+        this.video_id = a.video_id; this.trending_date = a.trending_date;
+        this.title = a.title; this.channel_title = a.channel_title;
+        this.publish_time = a.publish_time; this.tags = a.tags; this.thumbnail_link = a.thumbnail_link;
+        this.description = a.description;
     }
 
     // Construtor padrão para a base de dados tratada.
-    public Model (String data)
+    public Model (RandomAccessFile a) throws Exception
     {
+        this.lapide = a.readBoolean();
+        this.db_id = a.readLong();
+        this.byteSize = a.readInt();
+        this.category_id = a.readByte();
+        this.comment_count = a.readInt();
+        this.views = a.readLong();
+        this.likes = a.readLong();
+        this.dislikes = a.readLong();
+        this.country = new char[2];
+        String ab = "";
+        ab += a.readChar();
+        ab += a.readChar();
+        this.setCountry(ab);
+        this.comments_disabled = a.readBoolean();
+        this.ratings_disabled = a.readBoolean();
+        this.video_error_or_removed = a.readBoolean();
+
+        this.video_id = a.readUTF();
+        this.trending_date = a.readUTF();
+        this.title = a.readUTF(); 
+        this.channel_title = a.readUTF();
+        this.publish_time = a.readUTF();
+        this.tags = a.readUTF();
+        this.thumbnail_link = a.readUTF();
+        this.description = a.readUTF();
+    }
+
+    @Override public Model clone()
+    {
+        Model returnModel = new Model(this);
+        return returnModel;
     }
 
     // Metodo que calcula o tamanho em bits.
@@ -387,5 +438,209 @@ public class Model {
         MyIO.println("Favor preencher estes campos apenas com números: category_id, views, likes, dislikes,comment_count");
         String data = MyIO.readLine();
         return data;
+    }
+
+    // Permite que um Model seja editado.
+    public Model edit()
+    {
+        Model a = this.clone();
+        int i = 0;
+        while(i == 0)
+        {
+            a.printToString();
+            int argument = MyIO.readInt("Escreva o número atributo que deseja editar (1-20), ou digite 0 para sair. \n");
+            String value = "";
+            char confirm = 'b';
+            switch (argument) {
+                case 0:
+                    i = 1;
+                break;
+                case 1:
+                    value = MyIO.readString("Escreva o novo valor para o atributo: \n");
+                    MyIO.println("## 1: Lapide = " + value);
+                    confirm = MyIO.readChar("Isso parece correto? y/n: \n");
+                    if(confirm == 'y' || confirm == 'Y')
+                    {
+                        a.lapide = Boolean.parseBoolean(value);
+                    }
+                    break;
+                case 2:
+                    value = MyIO.readString("Escreva o novo valor para o atributo: \n");
+                    MyIO.println("## 2: Database ID = " + value);
+                    confirm = MyIO.readChar("Isso parece correto? y/n: \n");
+                    if(confirm == 'y' || confirm == 'Y')
+                    {
+                        a.setDb_id(Long.parseLong(value));
+                    }
+                    break;
+                case 3:
+                    value = MyIO.readString("Escreva o novo valor para o atributo: \n");
+                    MyIO.println("!! Alteração manual do tamanho em Bytes não é permitido. !!");
+                    confirm = MyIO.readChar("Aperte Enter para continuar.");
+                    break;
+                    case 4:
+
+                    value = MyIO.readString("Escreva o novo valor para o atributo: \n");
+                    MyIO.println("## 4: Category ID = " + value);
+                    confirm = MyIO.readChar("Isso parece correto? y/n: \n");
+                    if(confirm == 'y' || confirm == 'Y')
+                    {
+                        a.setCategory_id(Byte.parseByte(value));
+                    }
+                    break;
+                case 5:
+                    value = MyIO.readString("Escreva o novo valor para o atributo: \n");
+                    MyIO.println("## 5: Comment Count = " + value);
+                    confirm = MyIO.readChar("Isso parece correto? y/n: \n");
+                    if(confirm == 'y' || confirm == 'Y')
+                    {
+                        a.setComment_count(Integer.parseInt(value));
+                    }
+                    break;
+                case 6:
+                    value = MyIO.readString("Escreva o novo valor para o atributo: \n");
+                    MyIO.println("## 6: Views = " + value);
+                    confirm = MyIO.readChar("Isso parece correto? y/n: \n");
+                    if(confirm == 'y' || confirm == 'Y')
+                    {
+                        a.setViews(Long.parseLong(value));
+                    }
+                    break;
+                case 7:
+                    value = MyIO.readString("Escreva o novo valor para o atributo: \n");
+                    MyIO.println("## 7: Likes = " + value);
+                    confirm = MyIO.readChar("Isso parece correto? y/n: \n");
+                    if(confirm == 'y' || confirm == 'Y')
+                    {
+                        a.setLikes(Long.parseLong(value));
+                    }
+                    break;
+                case 8:
+                    value = MyIO.readString("Escreva o novo valor para o atributo: \n");
+                    MyIO.println("## 8: Dislikes = " + value);
+                    confirm = MyIO.readChar("Isso parece correto? y/n: \n");
+                    if(confirm == 'y' || confirm == 'Y')
+                    {
+                        a.setDislikes(Long.parseLong(value));;
+                    }
+                    break;
+                case 9:
+                    value = MyIO.readString("Escreva o novo valor para o atributo: \n");
+                    MyIO.println("## 9: Country Code = " + value);
+                    confirm = MyIO.readChar("Isso parece correto? y/n: \n");
+                    if(confirm == 'y' || confirm == 'Y')
+                    {
+                        a.country[0] = value.charAt(0);
+                        a.country[1] = value.charAt(1);
+                    }
+                    break;
+                case 10:
+                    value = MyIO.readString("Escreva o novo valor para o atributo: \n");
+                    MyIO.println("## 10: Comments Disabled = " + value);
+                    confirm = MyIO.readChar("Isso parece correto? y/n: \n");
+                    if(confirm == 'y' || confirm == 'Y')
+                    {
+                        a.comments_disabled = Boolean.parseBoolean(value);
+                    }
+                    break;
+                case 11:
+                    value = MyIO.readString("Escreva o novo valor para o atributo: \n");
+                    MyIO.println("## 11: Ratings Disabled = " + value);
+                    confirm = MyIO.readChar("Isso parece correto? y/n: \n");
+                    if(confirm == 'y' || confirm == 'Y')
+                    {
+                        a.ratings_disabled = Boolean.parseBoolean(value);
+                    }
+                    break;
+                case 12:
+                    value = MyIO.readString("Escreva o novo valor para o atributo: \n");
+                    MyIO.println("## 12: Video Error or Removed = " + value);
+                    confirm = MyIO.readChar("Isso parece correto? y/n: \n");
+                    if(confirm == 'y' || confirm == 'Y')
+                    {
+                        a.video_error_or_removed = Boolean.parseBoolean(value);
+                    }
+                    break;
+                case 13:
+                    value = MyIO.readString("Escreva o novo valor para o atributo: \n");
+                    MyIO.println("## 13: Youtube ID = " + value);
+                    confirm = MyIO.readChar("Isso parece correto? y/n: \n");
+                    if(confirm == 'y' || confirm == 'Y')
+                    {
+                        a.video_id = value;
+                    }
+                    break;
+                case 14:
+                    value = MyIO.readString("Escreva o novo valor para o atributo: \n");
+                    MyIO.println("## 1: Trending Date = " + value);
+                    confirm = MyIO.readChar("Isso parece correto? y/n: \n");
+                    if(confirm == 'y' || confirm == 'Y')
+                    {
+                        a.trending_date = value;
+                    }
+                    break;
+                case 15:
+                    value = MyIO.readString("Escreva o novo valor para o atributo: \n");
+                    MyIO.println("## 15: Titulo = " + value);
+                    confirm = MyIO.readChar("Isso parece correto? y/n: \n");
+                    if(confirm == 'y' || confirm == 'Y')
+                    {
+                        a.title = value;
+                    }
+                    break;
+                case 16:
+                    value = MyIO.readString("Escreva o novo valor para o atributo: \n");
+                    MyIO.println("## 16: Author = " + value);
+                    confirm = MyIO.readChar("Isso parece correto? y/n: \n");
+                    if(confirm == 'y' || confirm == 'Y')
+                    {
+                        a.channel_title = value;
+                    }
+                    break;
+                case 17:
+                    value = MyIO.readString("Escreva o novo valor para o atributo: \n");
+                    MyIO.println("## 17: Publish Time = " + value);
+                    confirm = MyIO.readChar("Isso parece correto? y/n: \n");
+                    if(confirm == 'y' || confirm == 'Y')
+                    {
+                        a.publish_time = value;
+                    }
+                    break;
+                case 18:
+                    value = MyIO.readString("Escreva o novo valor para o atributo: \n");
+                    MyIO.println("## 18: Tags = " + value);
+                    confirm = MyIO.readChar("Isso parece correto? y/n: \n");
+                    if(confirm == 'y' || confirm == 'Y')
+                    {
+                        a.tags = value;
+                    }
+                    break;
+                case 19:
+                    value = MyIO.readString("Escreva o novo valor para o atributo: \n");
+                    MyIO.println("## 19: Thumbnail Link = " + value);
+                    confirm = MyIO.readChar("Isso parece correto? y/n: \n");
+                    if(confirm == 'y' || confirm == 'Y')
+                    {
+                        a.thumbnail_link = value;
+                    }
+                    break;
+                case 20:
+                    value = MyIO.readString("Escreva o novo valor para o atributo: \n");
+                    MyIO.println("## 20: Description = " + value);
+                    confirm = MyIO.readChar("Isso parece correto? y/n: \n");
+                    if(confirm == 'y' || confirm == 'Y')
+                    {
+                        a.description = value;
+                    }
+                    break;
+
+                default:
+                    MyIO.println("Operacao Invalida");
+                    break;
+            }
+
+            a.byteSize = a.getByteSize();
+        }
+        return a;
     }
 }

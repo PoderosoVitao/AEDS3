@@ -3,6 +3,7 @@ import java.io.FileReader;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -23,6 +24,9 @@ public class Arquivo {
 
     // Usadas para os DS não tratados
     public BufferedReader buffIN;
+
+    // Usadas para o metodo Update e Remove
+    public RandomAccessFile RAF;
     
 
     public Arquivo()
@@ -58,8 +62,18 @@ public class Arquivo {
 
     public void openRead() throws IOException
     {
+        RAF = new RandomAccessFile(filepath, "r");
         arqIN = new FileInputStream(filepath);
         dosIN = new DataInputStream(arqIN);
+    }
+
+    public void openEdit() throws IOException
+    {
+        RAF = new RandomAccessFile(filepath, "rw");
+        arqOUT = new FileOutputStream(RAF.getFD());
+        dosOUT = new DataOutputStream(arqOUT);
+        arqIN  = new FileInputStream(RAF.getFD());
+        dosIN  = new DataInputStream(arqIN);
     }
 
     // Metodo que le das DBs backup.
@@ -71,6 +85,9 @@ public class Arquivo {
     // Escreve como um fluxo de bytes a partir de um modelo.
     public void writeModel(Model a) throws IOException
     {
+        // Write Lapide before anything else.
+
+        dosOUT.writeBoolean(a.getLapide());
 
         // DB_ID and ByteSize are written first, to allow finding indexes and skipping them effectively.
 
@@ -78,8 +95,6 @@ public class Arquivo {
         dosOUT.writeInt(a.getByteSize());
 
         // Then attributes with a fixed size are written.
-
-        dosOUT.writeBoolean(a.getLapide());
 
         dosOUT.writeByte(a.getCategory_id());
 
@@ -166,5 +181,41 @@ public class Arquivo {
         }
 
         return returnString;
+    }
+
+    // Metodo SEEK, move o cabeçote para um ID específico.
+    public boolean seek(long id)
+    {
+        long bytesSkipped = 0;
+        File file = new File(filepath);
+        long arqLength = file.length();
+
+        // Iterar sequencialmente até um ID.
+        try{
+            Boolean tempLapide = this.RAF.readBoolean();
+            long tempID = this.RAF.readLong();
+            int byteSize = this.RAF.readInt();
+            bytesSkipped += 13; //1 Byte for Bool, 4 bytes for an int, 8 bytes for the long;
+            while ((bytesSkipped + byteSize) <= arqLength) {
+                if(tempID == id && tempLapide == false)
+                {
+                    RAF.seek(RAF.getFilePointer() - 13);
+                    return true;
+                }
+                bytesSkipped += byteSize;
+                this.arqIN.skip(byteSize - 13);
+                tempLapide = this.dosIN.readBoolean();
+                tempID = this.dosIN.readLong();
+                byteSize = this.dosIN.readInt();
+            }
+            if(tempID == id && tempLapide == false)
+                {
+                    RAF.seek(RAF.getFilePointer() - 13);
+                    return true;
+                }
+        } catch (Exception e) {
+            MyIO.println("Error on FindLastID");
+        }
+        return false;   
     }
 }

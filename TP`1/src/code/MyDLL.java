@@ -158,21 +158,6 @@ public class MyDLL {
         return target.getData();
     }
 
-    // reads an interval from ]a to b[
-    public void readIntervalInclusive (int a, int b)
-    {
-        int smaller = (a < b) ? a : b;
-        int larger  = (a > b) ? a : b;
-        Node temp = seekInDLL(smaller);
-        while (smaller < larger && temp != null)
-        {
-            temp.getData().printToString();
-            temp = temp.getNext();
-            smaller++;
-        }
-    }
-
-
     // Merge two DLLs together. The tail of THIS points to the head of the last, and vice versa.
 
     public void mergeDLLs (MyDLL otherDLL)

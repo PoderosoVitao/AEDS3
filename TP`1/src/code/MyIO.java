@@ -150,6 +150,22 @@ public class MyIO {
       return readInt();
    }
 
+   public static long readLong(){
+      long i = -1;
+      try{
+         i = Long.parseLong(readString().trim());
+      }catch(Exception e){}
+      return i;
+   }
+
+   public static long readLong(String str){
+      try {
+         PrintStream out = new PrintStream(System.out, true, charset);
+         out.print(str);
+      }catch(UnsupportedEncodingException e){ System.out.println("Erro: charset invalido"); }
+      return readLong();
+   }
+
    public static String readString(){
       String s = "";
       char tmp;
