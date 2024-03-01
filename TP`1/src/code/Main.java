@@ -159,7 +159,7 @@ public class Main {
  *      |\_> Arquivo.java: Refatora o metodo readContinuous para parar de ler ao chegar no fim do arquivo.
  *      \_>  Model.java  : O metodo Get_Bytes não estava funcionando com caracteres Emoji, então tive que
  *            refaze-lo de acordo com as minhas necessidades. Agora parece, finalmente, estar tudo certo com o Create.
- * 03/01/2024 22:05 UTC-3 - 1.0.0
+ * 03/01/2024 14:35 UTC-3 - 1.0.0
  *      |\_> MyIO.java   : Novo metodo ReadLong();
  *      |\_> Crud.java   : Todos os metodos CRUD adicionados.
  *      |\_> Arquivo.java: Novo metodo Seek.
