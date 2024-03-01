@@ -49,7 +49,10 @@ public class Main {
                     option = 0;
                     break;
                 case 1:
-                    myCrud.reloadDB();  
+                    MyIO.println("Favor copie e cole o caminho até os datasets Backup");
+                    MyIO.println("Exemplo: \"E:\\Software\\Programming\\Github\\AEDS3\\TP1\\Database\\t\\\"");
+                    String backpath = MyIO.readString();
+                    myCrud.reloadDB(backpath);  
                     break;
                 case 2:
                     myCrud.create();
