@@ -12,10 +12,64 @@ package src.code;
 public class Main {
     public static void main (String[] args) {
         
-        Crud myCrud = new Crud("./mynewDB");
-        myCrud.reloadDB();
-        myCrud.findLastID();
-        
+        int option = -1;
+
+        MyIO.println("__/\\\\\\________/\\\\\\___________________________________________________/\\\\\\\\\\\\\\\\\\\\\\\\_____/\\\\\\\\\\\\\\\\\\\\\\\\\\___        ");
+        MyIO.println(" _\\/\\\\\\_______\\/\\\\\\__________________________________________________\\/\\\\\\////////\\\\\\__\\/\\\\\\/////////\\\\\\_       ");
+        MyIO.println("  _\\//\\\\\\______/\\\\\\___/\\\\\\_____/\\\\\\___________________________________\\/\\\\\\______\\//\\\\\\_\\/\\\\\\_______\\/\\\\\\_      ");
+        MyIO.println("   __\\//\\\\\\____/\\\\\\___\\///___/\\\\\\\\\\\\\\\\\\\\\\__/\\\\\\\\\\\\\\\\\\________/\\\\\\\\\\____\\/\\\\\\_______\\/\\\\\\_\\/\\\\\\\\\\\\\\\\\\\\\\\\\\\\__     ");
+        MyIO.println("    ___\\//\\\\\\__/\\\\\\_____/\\\\\\_\\////\\\\\\////__\\////////\\\\\\_____/\\\\\\///\\\\\\__\\/\\\\\\_______\\/\\\\\\_\\/\\\\\\/////////\\\\\\_    ");
+        MyIO.println("     ____\\//\\\\\\/\\\\\\_____\\/\\\\\\____\\/\\\\\\________/\\\\\\\\\\\\\\\\\\\\___/\\\\\\__\\//\\\\\\_\\/\\\\\\_______\\/\\\\\\_\\/\\\\\\_______\\/\\\\\\_   ");
+        MyIO.println("      _____\\//\\\\\\\\\\______\\/\\\\\\____\\/\\\\\\_/\\\\___/\\\\\\/////\\\\\\__\\//\\\\\\__/\\\\\\__\\/\\\\\\_______/\\\\\\__\\/\\\\\\_______\\/\\\\\\_  ");
+        MyIO.println("       ______\\//\\\\\\_______\\/\\\\\\____\\//\\\\\\\\\\___\\//\\\\\\\\\\\\\\\\/\\\\__\\///\\\\\\\\\\/___\\/\\\\\\\\\\\\\\\\\\\\\\\\/___\\/\\\\\\\\\\\\\\\\\\\\\\\\\\/__ ");
+        MyIO.println("        _______\\///________\\///______\\/////_____\\////////\\//_____\\/////_____\\////////////_____\\/////////////____");
+
+        MyIO.println("\nVitaoDB - TP 1 - 817958\n");
+        // Campo de escolhas
+
+        MyIO.println("Favor copie e cole o caminho até a base de dados:");
+        MyIO.println("Exemplo: \"E:\\Software\\Programming\\Github\\AEDS3\\mynewDB\"");
+        String filepath = MyIO.readString();
+        Crud myCrud = new Crud(filepath);
+
+        while (option != 0)
+        {
+            MyIO.println("Registros Validos Encontrados: " + myCrud.findAmount());
+            
+            MyIO.println("0 -> Sair do Programa\n" +
+                                      "1 -> Recarregar primeiros 1000 registros de cada Dataset\n" +
+                                      "2 -> CREATE\n" +
+                                      "3 -> UPDATE\n" +
+                                      "4 -> READ\n" +
+                                      "5 -> DELETE\n");
+            option = MyIO.readInt();
+
+            switch (option) {
+                case 0:
+                    option = 0;
+                    break;
+                case 1:
+                    myCrud.reloadDB();  
+                    break;
+                case 2:
+                    myCrud.create();
+                    break;
+                case 3:
+                    myCrud.update();
+                    break;
+                case 4:
+                    myCrud.read();
+                    break;
+                case 5:
+                    myCrud.delete();
+                break;
+            
+                default:
+                    MyIO.println("Operacao invalida.\n");
+                break;
+            }
+            option = MyIO.readInt();
+        }
     }
 }
 
@@ -98,11 +152,18 @@ public class Main {
  *      Observações:
  *      Estava equivocado. A base de dados ruim era, na verdade, a 'JPvideos.csv'. Após remove-lá,o metodo seek do CRUD passou a funcionar, 
  *      E também aumentamos consideravelmente o tempo de leitura. Irei tentar fazer alterações para incorpora-la denovo à DB tratada.
-  * 02/28/2024 22:05 UTC-3 - 0.8.0
+ * 02/28/2024 22:05 UTC-3 - 0.8.0
  *      |\_> DBs  : DB tratada disponivel por meio do metodo reloadDB.
  *      Não será adicionada ao Github por questão de tamanho. Basta re-compilar.
  *      |\_> Crud.java   : Leitura foi consertada. Metodo reloadDB agora informa o úsuario do progresso a cada 1000 registros.
  *      |\_> Arquivo.java: Refatora o metodo readContinuous para parar de ler ao chegar no fim do arquivo.
  *      \_>  Model.java  : O metodo Get_Bytes não estava funcionando com caracteres Emoji, então tive que
  *            refaze-lo de acordo com as minhas necessidades. Agora parece, finalmente, estar tudo certo com o Create.
+ * 03/01/2024 22:05 UTC-3 - 1.0.0
+ *      |\_> MyIO.java   : Novo metodo ReadLong();
+ *      |\_> Crud.java   : Todos os metodos CRUD adicionados.
+ *      |\_> Arquivo.java: Novo metodo Seek.
+ *      \_>  Model.java  : Refatoração do metodo printToString();
+ *            Também models novos para ajudar com o CRUD.
+ */
  */

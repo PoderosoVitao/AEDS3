@@ -109,7 +109,7 @@ public class Crud {
         dataset.readLineUntreated(); // Pular a primeira linha, que sempre contém apenas metadados.
         loadBuffer = dataset.readLineContinuous(); // Ler a segunda linha, que já contem informações.
         int i = 0; // Limits how many entries to read per dataset.
-        while(loadBuffer.length() > 2 && (loadBuffer.equals("null") == false))
+        while(loadBuffer.length() > 2 && (loadBuffer.equals("null") == false) && i < 1000)
         {
             if(db_id[0] % 1000 == 0)
             {
@@ -140,17 +140,19 @@ public class Crud {
         try {
             header.openRead();
         } catch (Exception e) {
-            MyIO.println("Exceção findLastID");
+            MyIO.println("Excecao findLastID");
         }
 
         // Iterar sequencialmente até o final.
         try{
+            Boolean tempLapide = header.dosIN.readBoolean();
             long tempID = header.dosIN.readLong();
             int byteSize = header.dosIN.readInt();
-            bytesSkipped += 12; // 4 bytes for an int, 8 bytes for the long;
+            bytesSkipped += 13; //1 Byte for Bool, 4 bytes for an int, 8 bytes for the long;
             while ((bytesSkipped + byteSize) <= arqLength) {
                 bytesSkipped += byteSize;
-                header.arqIN.skip(byteSize - 12);
+                header.arqIN.skip(byteSize - 13);
+                tempLapide = header.dosIN.readBoolean();
                 tempID = header.dosIN.readLong();
                 byteSize = header.dosIN.readInt();
             }
@@ -164,30 +166,205 @@ public class Crud {
         return -1;
     }
 
+    // Metodo que retorna o N# de registros validos
+    public long findAmount()
+    {
+        long bytesSkipped = 0;
+        File file = new File(filepath);
+        long arqLength = file.length();
+        Arquivo header = new Arquivo(filepath);
+        try {
+            header.openRead();
+        } catch (Exception e) {
+            MyIO.println("Excecao findAmount");
+        }
+        // Iterar sequencialmente até o final.
+        try{
+            Boolean tempLapide = header.dosIN.readBoolean();
+            long tempID = header.dosIN.readLong();
+            int byteSize = header.dosIN.readInt();
+            int amount = 0;
+            bytesSkipped += 13; //1 Byte for Bool, 4 bytes for an int, 8 bytes for the long;
+            while ((bytesSkipped + byteSize) <= arqLength) {
+                if(tempLapide == false)
+                {
+                    amount++;
+                }
+                bytesSkipped += byteSize;
+                header.arqIN.skip(byteSize - 13);
+                tempLapide = header.dosIN.readBoolean();
+                tempID = header.dosIN.readLong();
+                byteSize = header.dosIN.readInt();
+            }
+            header.close();
+            return amount;
+        } catch (Exception e) {
+            header.close();
+            MyIO.println("Error on FindLastID");
+        }   
+        header.close();
+        return -1;
+    }
+
     // Metodo CREATE
     public boolean create ()
     {
-
-        MyIO.println(this.findLastID());
-
-        /* // prompt for model details
+        // prompt for model details
         String data = Model.readModel();
 
         MyIO.println("Escreva o codigo do país em que o video foi publicado (US, UK, NK, SK, BR, DE...)");
         String countrycode = MyIO.readLine();
+        long lastId = this.findLastID();
 
-        int lastId;
+        char CountryCode[] = {countrycode.charAt(0), countrycode.charAt(1)};
 
-        Model a = */
+        if(lastId < 0)
+        {
+            // Error happened.
+            return false;
+        }
+
+        // Model que será escrito.
+        Model a = new Model(data, lastId + 1, CountryCode);
+
+        File file = new File(filepath);
+        long arqLength = file.length();
+        Arquivo header = new Arquivo(filepath);
+        try {
+            header.openWriteAppend();
+            header.writeModel(a);
+
+        } catch (Exception e) {
+            header.close();
+            MyIO.println("Excecao Create");
+        }
 
         return true;
     }
 
     // Overload do metodo Create quando o metodo Update estoura o tamanho alocado.
+    public boolean create (Model a)
+    {
+        long lastId = this.findLastID();
+        if(lastId < 0)
+        {
+            // Error happened.
+            return false;
+        }
+        File file = new File(filepath);
+        long arqLength = file.length();
+        Arquivo header = new Arquivo(filepath);
+        try {
+            header.openWriteAppend();
+            header.writeModel(a);
+
+        } catch (Exception e) {
+            header.close();
+            MyIO.println("Excecao Create");
+        }
+
+        return true;
+    }
 
     // Metodo READ
 
+    public boolean read()
+    {
+        long seekID = MyIO.readLong("ID do registro: \n");
+        return read(seekID);
+    }
+
+    // Ler um ID
+    public boolean read(long id)
+    {
+
+        Arquivo header = new Arquivo(filepath);
+        try {
+            header.openEdit();
+            Boolean exists = header.seek(id);
+            if(exists)
+            {
+                Model readModel = new Model(header.RAF);
+                readModel.printToString();
+                return true;
+            }
+            else
+            {
+                MyIO.println("ID nao encontrado no Dataset.");
+                return false;
+            }
+        } catch (Exception e)
+        {
+            MyIO.println("ID nao encontrado.");
+            return false;
+        }
+    }
+
     // Metodo UPDATE
+    public boolean update ()
+    {
+        int seekID = MyIO.readInt("ID do registro para dar UPDATE?");
+
+        Arquivo header = new Arquivo(filepath);
+        try {
+            header.openEdit();
+            header.seek(seekID);
+            Model prevModel = new Model(header.RAF);
+            Model newModel = prevModel.edit();
+            // Se o tamanho for menor ou igual, sobre-escreve na mesma posição
+            if(newModel.getByteSize() <= prevModel.getByteSize())
+            {
+                header.RAF.seek(header.RAF.getFilePointer() - prevModel.getByteSize());
+                newModel.setByteSize(prevModel.getByteSize());
+                header.writeModel(newModel);
+                header.close();
+                return true;
+            }
+            else
+            {
+                // Lapide = True, e depois, criar no fim.
+                header.seek(header.RAF.getFilePointer() - prevModel.getByteSize());
+                header.dosOUT.writeBoolean(true);
+                header.close();
+                return this.create(newModel);
+            }
+
+        } catch (Exception e) {
+            header.close();
+            MyIO.println("ID nao encontrado.");
+            return false;
+        }
+
+    }
 
     // Metodo DELETE
+    // Na verdade, não deletamos. Apenas damos toggle na lapide.
+    public boolean delete()
+    {
+        long seekID = MyIO.readLong("ID do registro: \n");
+        return delete(seekID);
+    }
+
+    public boolean delete(long ID)
+    {
+        char confirm = MyIO.readChar("Tem certeza que deseja deletar o registro? y/n\n");
+        if (confirm != 'y' && confirm != 'Y')
+        {
+            return false;
+        }
+
+        Arquivo header = new Arquivo(filepath);
+        try {
+            header.openEdit();
+            header.seek(ID);
+            // Lapide = True, e depois, criar no fim.
+            header.dosOUT.writeBoolean(true);
+            header.close();
+            return true;
+        } catch (Exception e) {
+            header.close();
+            MyIO.println("ID nao encontrado.");
+            return false;
+        }
+    }
 }
