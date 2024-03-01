@@ -31,7 +31,12 @@ public class Crud {
 
     // Metodo Reload, que recarrega a DB tratada a partir das 10 DBs 'normais'
     // Esse metodo sempre sobreescreve todo o arquivo.
-    public boolean reloadDB()
+    public boolean reloadDB ()
+    {
+        return reloadDB("E:/Software/Programming/Github/AEDS3/TP`1/Database/t/");
+    }
+
+    public boolean reloadDB(String path)
     {
         Arquivo header = new Arquivo(filepath);
         String backupDBsAddress = "E:/Software/Programming/Github/AEDS3/TP`1/Database/t/";
