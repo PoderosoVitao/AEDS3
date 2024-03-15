@@ -27,14 +27,23 @@ public class Main {
         MyIO.println("\nVitaoDB - TP 1 - 817958\n");
         // Campo de escolhas
 
-        MyIO.println("Favor copie e cole o caminho até a base de dados:");
+        MyIO.println("Favor copie e cole o caminho ate a base de dados:");
         MyIO.println("Exemplo: \"E:\\Software\\Programming\\Github\\AEDS3\\mynewDB\"");
+       
+       
+       
         String filepath = MyIO.readString();
         Crud myCrud = new Crud(filepath);
+        Metadata meta = null;
 
         while (option != 0)
         {
-            MyIO.println("Registros Validos Encontrados: " + myCrud.findAmount());
+            meta = myCrud.getData();
+            MyIO.println("Registros Validos Encontrados: #" + meta.getRegNum());
+            MyIO.println("Ultimo Registro No Programa: #" + meta.getLastId());
+            MyIO.println("Proximo ID inserido sera:  #" + meta.getNextId());
+            MyIO.println("Numero de Lapides:  #" + meta.getLapideNum());
+            MyIO.println("Numero de Registros Fora De Posicao (OOP):  #" + meta.getOOPNum());
             
             MyIO.println("0 -> Sair do Programa\n" +
                                       "1 -> Recarregar primeiros 1000 registros de cada Dataset\n" +
@@ -168,4 +177,13 @@ public class Main {
  *      |\_> Arquivo.java: Novo metodo Seek.
  *      \_>  Model.java  : Refatoração do metodo printToString();
  *            Também models novos para ajudar com o CRUD.
+ * 03/15/2024 14:35 UTC-3 - 1.1.0
+ *      |\_> Metadata.java   : Nova classe! Essa classe escreve e gerencia os metadados do arquivo.
+ *                     Agora guardamos o ultimo ID, o N# de IDs, o número de lapides, etc etc etc.
+ *                       Isso será necessário no futuro para tirarmos lapides de mais automaticamente,
+ *                         ou re-ordenar IDs fora de ordem.
+ *      |\_> Crud.java       : Depreciação de dois metodos desnecessários agora que temos a Metadata.
+ *      |\_> Arquivo.java    : Ajustes de compatibilidade para Metadata.java.
+ *      |\_> Model.java      : Correção de um bug do Update
+ *       \_> MyDLL.java      : Novo metodo para pegar o tamanho de todos os bytes. 
  */

@@ -182,6 +182,23 @@ public class MyDLL {
         }
         else; //Both DLLs are null. Nothing happens.
     }
+
+    // Returns the size in bytes of all entries.
+    public long getByteSize()
+    {
+        if(head != null) return getByteSize(head);
+        return 0;
+    }
+    public static long getByteSize(Node cuPos)
+    {
+        if(cuPos != null)
+        {
+            long sizeBT = cuPos.getData().getByteSize();
+            return (sizeBT + getByteSize(cuPos.getNext()));
+        }
+        return 0;
+    }
+
 }
 
 class Node {
