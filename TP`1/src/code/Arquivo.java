@@ -124,6 +124,22 @@ public class Arquivo {
         dosOUT.writeUTF(a.getDescription());
     }
 
+    public void writeMeta(Metadata a) throws IOException
+    {
+        dosOUT.writeLong(a.getLastId());
+        dosOUT.writeLong(a.getNextId());
+        dosOUT.writeLong(a.getFileSize());
+        dosOUT.writeInt(a.getRegNum());
+        dosOUT.writeInt(a.getLapideNum());
+        dosOUT.writeInt(a.getOOPNum());
+    }
+
+    public Metadata readMeta() throws IOException
+    {
+        Metadata retData = new Metadata(this);
+        return retData;
+    }
+
     public void close()
     {
         try {
@@ -186,14 +202,17 @@ public class Arquivo {
     }
 
     // Metodo SEEK, move o cabeçote para um ID específico.
+    // TODO: Refazer essa gambiarra. Que trêm feio.
     public boolean seek(long id)
     {
-        long bytesSkipped = 0;
+        long bytesSkipped = Metadata.MetadataHeaderSize;
         File file = new File(filepath);
         long arqLength = file.length();
 
         // Iterar sequencialmente até um ID.
         try{
+            // Skip header
+            RAF.seek(RAF.getFilePointer() + Metadata.MetadataHeaderSize);
             Boolean tempLapide = this.RAF.readBoolean();
             long tempID = this.RAF.readLong();
             int byteSize = this.RAF.readInt();

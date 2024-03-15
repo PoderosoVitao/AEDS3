@@ -639,7 +639,7 @@ public class Model {
                     break;
             }
 
-            a.byteSize = a.getByteSize();
+            a.byteSize = a.calcSize();
         }
         return a;
     }

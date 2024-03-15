@@ -50,8 +50,15 @@ public class Crud {
         MyDLL allEntriesFromBackupDBs = loadBackupDBIntoDLL(backupDBsAddress);
 
         try {
-
             header.openWrite();
+            // Get data for metadata first.
+            long lastByte  = allEntriesFromBackupDBs.tail.getData().getDb_id();
+            int regAmount  = allEntriesFromBackupDBs.getSize();
+            long byteSize  = allEntriesFromBackupDBs.getByteSize();
+
+            Metadata meta = new Metadata(lastByte, lastByte + 1, byteSize, regAmount, 0, 0);
+            
+            header.writeMeta(meta);
             while (allEntriesFromBackupDBs.getSize() > 0) {
                 header.writeModel(allEntriesFromBackupDBs.popDLLStart());
             }
@@ -127,7 +134,7 @@ public class Crud {
                 db_id[0] += 1;
                 i++;
             } catch (Exception e) {
-                MyIO.println("Error at ID: " + db_id[0]);
+                //MyIO.println("Error at ID: " + db_id[0]);
             } finally {
                 loadBuffer = dataset.readLineContinuous();
             }
@@ -136,6 +143,9 @@ public class Crud {
     }
 
     // Metodo que acha o ultimo ID em um arquivo, e o retorna.
+    /*
+    Metodo deprecado em razão da inclusão do cabeçalho.
+
     public long findLastID()
     {
         long bytesSkipped = 0;
@@ -170,7 +180,10 @@ public class Crud {
         header.close();
         return -1;
     }
+    */
 
+    /*
+    Metodo deprecado em razão da inclusão do cabeçalho.
     // Metodo que retorna o N# de registros validos
     public long findAmount()
     {
@@ -210,6 +223,7 @@ public class Crud {
         header.close();
         return -1;
     }
+    */
 
     // Metodo CREATE
     public boolean create ()
@@ -219,23 +233,24 @@ public class Crud {
 
         MyIO.println("Escreva o codigo do país em que o video foi publicado (US, UK, NK, SK, BR, DE...)");
         String countrycode = MyIO.readLine();
-        long lastId = this.findLastID();
-
         char CountryCode[] = {countrycode.charAt(0), countrycode.charAt(1)};
 
-        if(lastId < 0)
-        {
-            // Error happened.
-            return false;
-        }
-
-        // Model que será escrito.
-        Model a = new Model(data, lastId + 1, CountryCode);
-
-        File file = new File(filepath);
-        long arqLength = file.length();
         Arquivo header = new Arquivo(filepath);
         try {
+            header.openEdit();
+            Metadata meta = new Metadata(header);
+            header.close();
+            // Model que será escrito.
+            Model a = new Model(data, meta.getNextId(), CountryCode);
+            meta.setRegNum(meta.getRegNum() + 1);
+            meta.setNextId(meta.getNextId() + 1);
+            meta.setLastId(a.getDb_id());
+            meta.setFileSize(meta.getFileSize() + a.getByteSize());
+            // Escrever metadados.
+            header.openEdit();
+            header.writeMeta(meta);
+            header.close();
+            // Escrever o dado novo.
             header.openWriteAppend();
             header.writeModel(a);
 
@@ -250,14 +265,7 @@ public class Crud {
     // Overload do metodo Create quando o metodo Update estoura o tamanho alocado.
     public boolean create (Model a)
     {
-        long lastId = this.findLastID();
-        if(lastId < 0)
-        {
-            // Error happened.
-            return false;
-        }
-        File file = new File(filepath);
-        long arqLength = file.length();
+
         Arquivo header = new Arquivo(filepath);
         try {
             header.openWriteAppend();
@@ -316,7 +324,8 @@ public class Crud {
             header.seek(seekID);
             Model prevModel = new Model(header.RAF);
             Model newModel = prevModel.edit();
-            // Se o tamanho for menor ou igual, sobre-escreve na mesma posição
+            // Se o tamanho for menor ou igual, sobre-escreve na mesma posição e PRONTO.
+            // TODO: Metodo que acha registros que podem ser encurtados
             if(newModel.getByteSize() <= prevModel.getByteSize())
             {
                 header.RAF.seek(header.RAF.getFilePointer() - prevModel.getByteSize());
@@ -328,9 +337,26 @@ public class Crud {
             else
             {
                 // Lapide = True, e depois, criar no fim.
-                header.seek(header.RAF.getFilePointer() - prevModel.getByteSize());
+                header.RAF.seek(header.RAF.getFilePointer() - prevModel.getByteSize());
                 header.dosOUT.writeBoolean(true);
                 header.close();
+
+                // Model que será escrito.
+                header.openEdit();
+                Metadata meta = new Metadata(header);
+                header.close();
+                meta.setRegNum(meta.getRegNum() + 1);
+                meta.setLapideNum(meta.getLapideNum() + 1);
+                meta.setOOPNum(meta.getOOPNum() + 1);
+                meta.setLastId(newModel.getDb_id());
+                meta.setFileSize(meta.getFileSize() + newModel.getByteSize());
+
+                // Escrever metadados.
+                header.openEdit();
+                header.writeMeta(meta);
+                header.close();
+
+                // Escrever o dado novo.
                 return this.create(newModel);
             }
 
@@ -361,6 +387,13 @@ public class Crud {
         Arquivo header = new Arquivo(filepath);
         try {
             header.openEdit();
+            Metadata meta = new Metadata(header);
+            header.close();
+            meta.setLapideNum(meta.getLapideNum() + 1);
+            header.openEdit();
+            header.writeMeta(meta);
+            header.close();
+            header.openEdit();
             header.seek(ID);
             // Lapide = True, e depois, criar no fim.
             header.dosOUT.writeBoolean(true);
@@ -372,4 +405,19 @@ public class Crud {
             return false;
         }
     }
+
+    public Metadata getData()
+    {
+        try{
+            Arquivo header = new Arquivo(filepath);
+            header.openEdit();
+            Metadata a = new Metadata(header);
+            header.close();
+            return a;
+        }catch(Exception e){
+            MyIO.println("Erro GETDATA");
+            return null;
+        }
+    }
+
 }
