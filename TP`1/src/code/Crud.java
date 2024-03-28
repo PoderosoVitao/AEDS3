@@ -121,7 +121,7 @@ public class Crud {
         dataset.readLineUntreated(); // Pular a primeira linha, que sempre contém apenas metadados.
         loadBuffer = dataset.readLineContinuous(); // Ler a segunda linha, que já contem informações.
         int i = 0; // Limits how many entries to read per dataset.
-        while(loadBuffer.length() > 2 && (loadBuffer.equals("null") == false) && i < 1000)
+        while(loadBuffer.length() > 2 && (loadBuffer.equals("null") == false) && i < 10)
         {
             if(db_id[0] % 1000 == 0)
             {
@@ -141,89 +141,6 @@ public class Crud {
         }
         return returnList;
     }
-
-    // Metodo que acha o ultimo ID em um arquivo, e o retorna.
-    /*
-    Metodo deprecado em razão da inclusão do cabeçalho.
-
-    public long findLastID()
-    {
-        long bytesSkipped = 0;
-        File file = new File(filepath);
-        long arqLength = file.length();
-        Arquivo header = new Arquivo(filepath);
-        try {
-            header.openRead();
-        } catch (Exception e) {
-            MyIO.println("Excecao findLastID");
-        }
-
-        // Iterar sequencialmente até o final.
-        try{
-            Boolean tempLapide = header.dosIN.readBoolean();
-            long tempID = header.dosIN.readLong();
-            int byteSize = header.dosIN.readInt();
-            bytesSkipped += 13; //1 Byte for Bool, 4 bytes for an int, 8 bytes for the long;
-            while ((bytesSkipped + byteSize) <= arqLength) {
-                bytesSkipped += byteSize;
-                header.arqIN.skip(byteSize - 13);
-                tempLapide = header.dosIN.readBoolean();
-                tempID = header.dosIN.readLong();
-                byteSize = header.dosIN.readInt();
-            }
-            header.close();
-            return tempID;
-        } catch (Exception e) {
-            header.close();
-            MyIO.println("Error on FindLastID");
-        }   
-        header.close();
-        return -1;
-    }
-    */
-
-    /*
-    Metodo deprecado em razão da inclusão do cabeçalho.
-    // Metodo que retorna o N# de registros validos
-    public long findAmount()
-    {
-        long bytesSkipped = 0;
-        File file = new File(filepath);
-        long arqLength = file.length();
-        Arquivo header = new Arquivo(filepath);
-        try {
-            header.openRead();
-        } catch (Exception e) {
-            MyIO.println("Excecao findAmount");
-        }
-        // Iterar sequencialmente até o final.
-        try{
-            Boolean tempLapide = header.dosIN.readBoolean();
-            long tempID = header.dosIN.readLong();
-            int byteSize = header.dosIN.readInt();
-            int amount = 0;
-            bytesSkipped += 13; //1 Byte for Bool, 4 bytes for an int, 8 bytes for the long;
-            while ((bytesSkipped + byteSize) <= arqLength) {
-                if(tempLapide == false)
-                {
-                    amount++;
-                }
-                bytesSkipped += byteSize;
-                header.arqIN.skip(byteSize - 13);
-                tempLapide = header.dosIN.readBoolean();
-                tempID = header.dosIN.readLong();
-                byteSize = header.dosIN.readInt();
-            }
-            header.close();
-            return amount;
-        } catch (Exception e) {
-            header.close();
-            MyIO.println("Error on FindLastID");
-        }   
-        header.close();
-        return -1;
-    }
-    */
 
     // Metodo CREATE
     public boolean create ()

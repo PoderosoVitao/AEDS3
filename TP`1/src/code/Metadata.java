@@ -1,7 +1,7 @@
 package src.code;
 
 /*
- * Classe que é utilizada para ler e escrever os metadados da DB
+ * Classe que é utilizada para ler e escrever um cabeçalho com os metadados da DB
  * 
  * Em ordem, os dados armazenados são:
  * -> Ultimo ID do arquivo
