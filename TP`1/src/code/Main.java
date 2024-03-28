@@ -11,7 +11,7 @@ package src.code;
 
 public class Main {
     public static void main (String[] args) {
-        
+
         int option = -1;
 
         MyIO.println("__/\\\\\\________/\\\\\\___________________________________________________/\\\\\\\\\\\\\\\\\\\\\\\\_____/\\\\\\\\\\\\\\\\\\\\\\\\\\___        ");
@@ -24,7 +24,7 @@ public class Main {
         MyIO.println("       ______\\//\\\\\\_______\\/\\\\\\____\\//\\\\\\\\\\___\\//\\\\\\\\\\\\\\\\/\\\\__\\///\\\\\\\\\\/___\\/\\\\\\\\\\\\\\\\\\\\\\\\/___\\/\\\\\\\\\\\\\\\\\\\\\\\\\\/__ ");
         MyIO.println("        _______\\///________\\///______\\/////_____\\////////\\//_____\\/////_____\\////////////_____\\/////////////____");
 
-        MyIO.println("\nVitaoDB - TP 1 - 817958\n");
+        MyIO.println("\nVitaoDB - TP 2 v. 1.5.0 - R.A: 817958\n");
         // Campo de escolhas
 
         MyIO.println("Favor copie e cole o caminho ate a base de dados:");
@@ -186,4 +186,11 @@ public class Main {
  *      |\_> Arquivo.java    : Ajustes de compatibilidade para Metadata.java.
  *      |\_> Model.java      : Correção de um bug do Update
  *       \_> MyDLL.java      : Novo metodo para pegar o tamanho de todos os bytes. 
+ * 03/28/2024 14:00 UTC-3 - 1.2.0
+ *      |\_> BNode.java  : Nova classe -- Agora separada do MyDLL.java! Essa classe serve como Node para a arvore B.
+ *      |\_> MyBTree.java: Nova classe: Essa classe implementa uma arvore B de tamanho variável.
+ *              TODO: Metodos REMOVE, UPDATE e READ. Insert já feito.
+ *      |\_> Index.java  : Nova classe: Essa classe guarda o par ID e Byte_Offset de cada registro.
+ *      |\_> Crud.java   : Mudança temporaria para facilitar testes. Carrega apenas 10 registros de cada dataset no ReloadDB().
+ *       \_> MyDLL.java  : Remove a subclasse Node e coloca ela em um arquivo próprio.
  */
