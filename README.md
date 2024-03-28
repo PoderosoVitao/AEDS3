@@ -4,12 +4,12 @@ Repositório para as atividades de AEDS 3.
 3o periodo de Ciência da Computação, PUC MINAS, Praça da Liberdade
 
 Professor Hayala Nepomuceno Curto
+
 Aluno Victor Hugo Braz, 817958
 
 # O que existe aqui?
-Esse repositório está dividido em diferentes TPs.
 
-* TP 1:
+* TP 1: 0.0.0 -> 1.0.0
 Base de dados de acesso sequencial.
 Estrutura de arquivos:
 
@@ -29,3 +29,12 @@ MyIO.java: Contém metodos basicos de I/O
 
 Database: DB Tratada
 Database/t : Datasets backup/originais.
+
+* TP 2: 1.1.0 -> 2.0.0
+Base de dados com índice.
+Mesma estruturda do TP1, mais:
+
+Node.java : Contem os Nodes usados pela MyDLL.
+BNode.java : Contem os BNodes usados pela MyBtree
+MyBTree.java : Arvore B usada para guardar os indices.
+Index.java    : Utilizado como classe Model para guardar o ID e o Byte_Offset de cada registro.
