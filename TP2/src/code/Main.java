@@ -1,5 +1,7 @@
 package src.code;
 
+import java.io.File;
+
 /*
  * Arquivo.java         = Contém metodos de manipulação de arquivos em memória secundária e primária.
  * MyIO.java            = Contém metodos de entrada e saida (I/O) de dados.
@@ -25,15 +27,18 @@ public class Main {
         MyIO.println("        _______\\///________\\///______\\/////_____\\////////\\//_____\\/////_____\\////////////_____\\/////////////____");
 
         MyIO.println("\nVitaoDB - TP 2 v. 1.5.0 - R.A: 817958\n");
-        // Campo de escolhas
+
+        MyIO.println("Favor copie e cole o caminho ate o arquivo de indice:");
+        MyIO.println("Exemplo: \"E:\\Software\\Programming\\Github\\AEDS3\\btreeindex\"");
+
+        String indexFilepath = MyIO.readString();
 
         MyIO.println("Favor copie e cole o caminho ate a base de dados:");
         MyIO.println("Exemplo: \"E:\\Software\\Programming\\Github\\AEDS3\\mynewDB\"");
        
-       
-       
         String filepath = MyIO.readString();
-        Crud myCrud = new Crud(filepath);
+        Crud myCrud = new Crud(filepath, indexFilepath);
+
         Metadata meta = null;
 
         while (option != 0)
@@ -59,7 +64,7 @@ public class Main {
                     break;
                 case 1:
                     MyIO.println("Favor copie e cole o caminho até os datasets Backup");
-                    MyIO.println("Exemplo: \"E:\\Software\\Programming\\Github\\AEDS3\\TP1\\Database\\t\\\"");
+                    MyIO.println("Exemplo: \"E:\\Software\\Programming\\Github\\AEDS3\\Database\\t\\\"");
                     String backpath = MyIO.readString();
                     myCrud.reloadDB(backpath);  
                     break;
@@ -135,7 +140,7 @@ public class Main {
  * 02/22/2024 13:59 UTC-3 - 0.5.0
  *      |\_> Model.Java  : Construtor não-tratado modificado. Construtor tratado deprecado.
  *      |\_> Crud.java   : Inicio da refatoração do arquivo. TODO: Metodo ReloadDB.              
- *      |\_> Main.java   : Limpeza de metodos não usados. TODO.
+ *      |\_> Main.java   : Limpeza de metodos não usados. TODO: Limpeza de metodos.
  *      |\_> Arq.java    : Arquivo excluido. Não utiliza RAF.
  *      |\_> Arquivo.java: Nova classe que cuida de interações entre arquivos. Utiliza exclusivamente RAF.
  *      \_> /tp1/Database/t  -> Bases de dados em outros países. Serão adicionadas à DB tratada eventualmente.
@@ -193,4 +198,7 @@ public class Main {
  *      |\_> Index.java  : Nova classe: Essa classe guarda o par ID e Byte_Offset de cada registro.
  *      |\_> Crud.java   : Mudança temporaria para facilitar testes. Carrega apenas 10 registros de cada dataset no ReloadDB().
  *       \_> MyDLL.java  : Remove a subclasse Node e coloca ela em um arquivo próprio.
+ *
+ *  03/28/2024 10:44 UTC-3 - 1.3.0
+ *      Muitas mudanças com o foco em implementar e melhorar a inserção da arvore B.
  */

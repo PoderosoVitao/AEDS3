@@ -1,4 +1,5 @@
 package src.code;
+
 import java.io.FileReader;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -201,9 +202,8 @@ public class Arquivo {
         return returnString;
     }
 
-    // Metodo SEEK, move o cabeçote para um ID específico.
-    // TODO: Refazer essa gambiarra. Que trêm feio.
-    public boolean seek(long id)
+    // Metodo SEEK, move o cabeçote para um ID específico de maneira linear.
+    public boolean seekLinear(long id)
     {
         long bytesSkipped = Metadata.MetadataHeaderSize;
         File file = new File(filepath);
@@ -237,6 +237,23 @@ public class Arquivo {
         } catch (Exception e) {
             MyIO.println("Error on FindLastID");
         }
+        return false;   
+    }
+
+    // Avança o cabeçote um numero baseado no índice em B-tree
+    public boolean seekIndex(long id, MyBTree index)
+    {
+        File file = new File(filepath);
+        Index temp = index.search(id);
+
+        try {
+            // Não é necessário pular os metadados, pois eles já estão inclusos no offset do índice.
+            RAF.seek(RAF.getFilePointer() + temp.byteOffset);
+            return true;
+        } catch (Exception e) {
+            MyIO.println("Exceção seekIndex");
+        }
+
         return false;   
     }
 }

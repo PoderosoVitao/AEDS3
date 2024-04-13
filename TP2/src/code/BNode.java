@@ -25,32 +25,6 @@ public class BNode {
         this.next      = new BNode[ordem + 1];
     }
 
-    // Insere indice na B-tree. Retorna posição em que foi inserido.
-    public int insert(Index index, BNode parent)
-    {
-        int i = dataSize;
-        this.data[dataSize] = new Index(index.id, index.byteOffset);
-        dataSize++;
-
-        // Sort the last element
-        // We insertion-sort only the last element of the list. This is always O(n).
-        while(i > 0 && this.data[i].id < this.data[i - 1].id)
-        {
-            // Swap
-            Index temp = this.data[i - 1];
-            this.data[i - 1] = this.data[i];
-            this.data[i] = temp;
-            i--;
-        }
-
-        if(this.dataSize == this.ordem)
-        {
-            this.split(parent);
-        }
-
-        return i;
-    }
-
     // Retorna a posição em que um elemento seria inserido sem inserir.
     public int calcPos(Index index)
     {
@@ -62,55 +36,128 @@ public class BNode {
         return i;
     }
 
-    // This method should only be called if the tree is full
-    public void split(BNode parent)
+    public void insert(Index indice)
     {
-        // Get middle element
-        int middleOf = this.dataSize / 2;
-        Index middleElement = this.data[middleOf];
-        
-        // Make two B-Trees with each 'half' of the original
-        BNode tempLeft = new BNode(ordem, this.tree);
-        for (int i = 0; i < middleOf; i++) {
-            tempLeft.data[i] = new Index(this.data[i].id, this.data[i].byteOffset);
-            tempLeft.next[i] = this.next[i];
-        }
-        tempLeft.sizeCalc();
-
-        BNode tempRight = new BNode(ordem, this.tree);
-        int i = middleOf + 1;
-        int j = 0;
-        for (i = middleOf + 1; i < ordem; i++, j++) {
-            j = 0;
-            tempRight.data[j] = new Index(this.data[i].id, this.data[i].byteOffset);
-            tempRight.next[j] = this.next[i];
-        }
-            tempRight.next[j] = this.next[i]; // Copy the last extra 'next'
-            tempRight.sizeCalc();
-
-
-        // Bring middle element up to the previous tree.
-        int insertPos = 0;
-        if(this.tree.head == this)
+        if(this.isLeaf() == false)
         {
-            BNode newHead = new BNode(this.ordem, this.tree);
-            this.tree.head = newHead;
-            newHead.insert(middleElement, null);
-            this.tree.height++;
+            int i = 0;
+            while(this.data[i] != null)
+            {
+                if (indice.id < this.data[i].id)
+                {
+                    if(this.next[i] == null){
+                        this.next[i] = new BNode(this.ordem, this.tree);
+                        this.leavesNum++;
+                        this.next[i].insert(indice);
+                        break;
+                    }
+                    this.next[i].insert(indice);
+                    break;
+                }
+                i++;
+            }
 
-            // Add both sub-trees to the tree.
-            newHead.next[insertPos] = tempLeft;
-            newHead.next[insertPos + 1] = tempRight;
-            newHead.sizeCalc();
+            if(this.next[i] == null){
+                this.next[i] = new BNode(this.ordem, this.tree);
+                this.leavesNum++;
+            }
+            this.next[i].insert(indice);
         }
         else
         {
-            insertPos = parent.calcPos(middleElement);
-            parent.next[insertPos] = tempLeft;
-            parent.next[insertPos + 1] = tempRight;
-            parent.insert(middleElement, parent.findParent());
-            parent.sizeCalc();
+            int i = 0;
+            while(this.data[i] != null) i++;
+            this.data[i] = new Index(indice.id, indice.byteOffset);
+            Index tempIndex = null;
+            this.dataSize++;
+            int j = i;
+            while(j > 0 && this.data[j - 1].id > this.data[j].id)
+            {
+                tempIndex = this.data[j - 1];
+                this.data[j - 1] = this.data[j];
+                this.data[j] = tempIndex;
+
+                j--;
+            }
         }
+
+        if (this.dataSize == this.ordem) {
+            this.split();
+        }
+    }
+
+    public void split()
+    {
+        BNode leftNode = new BNode(ordem, tree);
+        BNode rightNode = new BNode(ordem, tree);
+
+        int i = 0;
+        while (i < ordem/2) {
+            leftNode.next[i] = this.next[i];
+            leftNode.data[i] = this.data[i];
+            if(leftNode.next[i] != null) leftNode.leavesNum++;
+            if(leftNode.data[i] != null) leftNode.dataSize++;
+            i++;
+        }
+        Index middleNode = new Index(this.data[i].id, this.data[i].byteOffset);
+        leftNode.next[i] = this.next[i];
+        if(leftNode.next[i] != null) rightNode.leavesNum++;
+        i++;
+        while (i < ordem) {
+            rightNode.next[i-((ordem/2) + 1)] = this.next[i];
+            rightNode.data[i-((ordem/2) + 1)] = this.data[i];
+            if(rightNode.next[i-((ordem/2) + 1)] != null) rightNode.leavesNum++;
+            if(rightNode.data[i-((ordem/2) + 1)] != null) rightNode.dataSize++;
+            i++;
+        }
+
+        // Insert on parent
+        BNode tempParent = this.findParent();
+       
+        if(tempParent == null)
+        {
+            this.tree.head = new BNode(this.ordem, this.tree);
+            tempParent = this.tree.head;
+            this.tree.height++;
+            tempParent.leavesNum++;
+        }
+
+        tempParent.data[tempParent.dataSize] = middleNode;
+        int j = tempParent.dataSize;
+        tempParent.dataSize += 1;
+
+        Index tempIndex = null;
+        while (j > 0 && tempParent.data[j - 1].id > tempParent.data[j].id) {
+            tempIndex = tempParent.data[j - 1];
+            tempParent.data[j - 1] = tempParent.data[j];
+            tempParent.data[j] = tempIndex;
+            tempIndex = null;
+            j--;
+        }
+
+        tempParent.next[j] = leftNode;
+        tempParent.next[tempParent.leavesNum] = rightNode;
+        int k = tempParent.leavesNum;
+        tempParent.leavesNum += 1;
+
+        BNode tempNode = null;
+        while (k > (j + 1)) {
+            tempNode = tempParent.next[k - 1];
+            tempParent.next[k - 1] = tempParent.next[k];
+            tempParent.next[k] = tempNode;
+            tempNode = null;
+            k--;
+        }
+
+        tempParent.sizeCalc();
+        leftNode.sizeCalc();
+        rightNode.sizeCalc();
+
+    }
+
+    public int remove(int pos)
+    {
+        return 0;
     }
 
     // Calcula a quantidade de registros validos e o tamanho das folgas.
@@ -156,5 +203,34 @@ public class BNode {
     {
 
     }
+
+    public boolean isLeaf() {
+        return leavesNum == 0;
+    }
+
+    // Caminhamento na árvore
+    public void caminha(){
+        MyIO.println("----");
+        for (int i = 0; i < data.length; i++) {
+            if(this.next[i] != null) this.next[i].caminha();
+            if(this.data[i] != null) MyIO.println(this.data[i].id);
+        }
+    }
+
+    public void exportNode(Arquivo arq)
+    {
+        for (int i = 0; i < data.length; i++) {
+            if(this.next[i] != null) this.next[i].exportNode(arq);
+            if(this.data[i] != null){
+                try {
+                    arq.dosOUT.writeLong(this.data[i].id);
+                    arq.dosOUT.writeLong(this.data[i].byteOffset);
+                } catch (Exception e) {
+                    MyIO.println("ERRO EXPORT NODE!");
+                }
+            }
+        }
+    }
+
 }
 
