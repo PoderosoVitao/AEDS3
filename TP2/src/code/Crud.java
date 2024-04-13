@@ -11,15 +11,28 @@ import java.io.File;
 public class Crud {
 
     private String filepath; // Base de dados tratada.
+    private String indexPath; // Arquivo de índices em B-tree
+    private MyBTree BTreeIndex;
 
     private Crud()
     {
         filepath = null;
+        indexPath = null;
+        BTreeIndex = null;
     }
 
     public Crud(String filepath)
     {
         this.filepath = filepath;
+        this.indexPath = null;
+        BTreeIndex = null;
+    }
+
+    public Crud(String filepath, String indexPath)
+    {
+        this.filepath = filepath;
+        this.indexPath = indexPath;
+        BTreeIndex = MyBTree.importTree(indexPath);
     }
 
     // Checa se o arquivo tem um caminho valido.
@@ -33,13 +46,13 @@ public class Crud {
     // Esse metodo sempre sobreescreve todo o arquivo.
     public boolean reloadDB ()
     {
-        return reloadDB("E:/Software/Programming/Github/AEDS3/TP`1/Database/t/");
+        return reloadDB("E:/Software/Programming/Github/AEDS3/Database/t/");
     }
 
     public boolean reloadDB(String path)
     {
         Arquivo header = new Arquivo(filepath);
-        String backupDBsAddress = "E:/Software/Programming/Github/AEDS3/TP`1/Database/t/";
+        String backupDBsAddress = "E:/Software/Programming/Github/AEDS3/Database/t/";
         if(this.exists())
         {
             MyIO.println("DB exists. Are you sure you want to overwrite it? y/n");
@@ -58,19 +71,44 @@ public class Crud {
 
             Metadata meta = new Metadata(lastByte, lastByte + 1, byteSize, regAmount, 0, 0);
             
+            // MetaData takes 36 bytes to write.
             header.writeMeta(meta);
+            long byteCounter = 36;
+
+            // Create B-Tree for the index.
+            MyBTree indexBTree = new MyBTree(8);
+
+            // Create temp Index to store the ID in the B-tree.
+            Index temp = new Index(0, byteCounter);
+
             while (allEntriesFromBackupDBs.getSize() > 0) {
-                header.writeModel(allEntriesFromBackupDBs.popDLLStart());
+                // Pop the model to be written from the DLL
+                Model toWrite = allEntriesFromBackupDBs.popDLLStart();
+
+                // Get the ID and byteOffset for the index file
+                temp.id = toWrite.getDb_id();
+                temp.byteOffset = byteCounter;
+
+                // Update the byteCounter with the current size
+                byteCounter += toWrite.getByteSize();
+
+                // Finally, write the model into the file AND insert the index into the B-tree.
+                header.writeModel(toWrite);
+                indexBTree.insert(temp);
             }
+
+            // Export B-tree to a file.
+            // indexBTree.camninha();
+            indexBTree.export(this.indexPath);
 
         } catch (Exception e) {
             e.printStackTrace(System.out);
             return false;
         } finally {
-
             header.close();
         }
 
+        BTreeIndex = MyBTree.importTree(indexPath);
         return true;
     }
 
@@ -87,7 +125,7 @@ public class Crud {
             {'F', 'R'}, // Row 2
             {'G', 'B'}, // Row 3
             {'I', 'N'}, // Row 4
-          //{'J', 'P'}, // Row 5 // JP is abnormally slow for some reason. // Removed for performance
+        //  {'J', 'P'}, // Row 5 // JP is abnormally slow for some reason. // Removed for performance
             {'K', 'R'}, // Row 6
             {'M', 'X'}, // Row 7
             {'R', 'U'}  // Row 8
@@ -104,7 +142,7 @@ public class Crud {
                 tempDLL = loadBackupDBIntoDLL (path + dbNames[i], countryCodes[i], db_id);
                 returnDLL.mergeDLLs(tempDLL);
             } catch (Exception e) {
-                
+                MyIO.println("ERROR DB: " + dbNames[i]); 
             }
         }
         return returnDLL;
@@ -121,7 +159,7 @@ public class Crud {
         dataset.readLineUntreated(); // Pular a primeira linha, que sempre contém apenas metadados.
         loadBuffer = dataset.readLineContinuous(); // Ler a segunda linha, que já contem informações.
         int i = 0; // Limits how many entries to read per dataset.
-        while(loadBuffer.length() > 2 && (loadBuffer.equals("null") == false) && i < 10)
+        while(loadBuffer.length() > 2 && (loadBuffer.equals("null") == false) && i < 50)
         {
             if(db_id[0] % 1000 == 0)
             {
@@ -157,19 +195,30 @@ public class Crud {
             header.openEdit();
             Metadata meta = new Metadata(header);
             header.close();
+
             // Model que será escrito.
             Model a = new Model(data, meta.getNextId(), CountryCode);
             meta.setRegNum(meta.getRegNum() + 1);
             meta.setNextId(meta.getNextId() + 1);
             meta.setLastId(a.getDb_id());
             meta.setFileSize(meta.getFileSize() + a.getByteSize());
+
             // Escrever metadados.
             header.openEdit();
             header.writeMeta(meta);
             header.close();
+
             // Escrever o dado novo.
             header.openWriteAppend();
             header.writeModel(a);
+            header.close();
+
+            ///////////////////////// ATUALIZAR ÍNDICE B tree, se existir.
+            if(indexPath != null)
+            {
+
+            }
+            
 
         } catch (Exception e) {
             header.close();
@@ -211,7 +260,12 @@ public class Crud {
         Arquivo header = new Arquivo(filepath);
         try {
             header.openEdit();
-            Boolean exists = header.seek(id);
+            Boolean exists = false;
+
+            // Posicionar cabeçote
+            if(this.BTreeIndex != null) exists = header.seekIndex(id, BTreeIndex);
+            else exists = header.seekLinear(id);
+
             if(exists)
             {
                 Model readModel = new Model(header.RAF);
@@ -238,7 +292,11 @@ public class Crud {
         Arquivo header = new Arquivo(filepath);
         try {
             header.openEdit();
-            header.seek(seekID);
+
+            // Posicionar cabeçote
+            if(this.BTreeIndex != null) header.seekIndex(seekID, BTreeIndex);
+            else header.seekLinear(seekID);
+
             Model prevModel = new Model(header.RAF);
             Model newModel = prevModel.edit();
             // Se o tamanho for menor ou igual, sobre-escreve na mesma posição e PRONTO.
@@ -311,7 +369,11 @@ public class Crud {
             header.writeMeta(meta);
             header.close();
             header.openEdit();
-            header.seek(ID);
+
+            // Posicionar cabeçote
+            if(this.BTreeIndex != null) header.seekIndex(ID, BTreeIndex);
+            else header.seekLinear(ID);
+            
             // Lapide = True, e depois, criar no fim.
             header.dosOUT.writeBoolean(true);
             header.close();
