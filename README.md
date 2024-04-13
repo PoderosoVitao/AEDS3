@@ -35,6 +35,9 @@ Base de dados com índice.
 Mesma estruturda do TP1, mais:
 
 Node.java : Contem os Nodes usados pela MyDLL.
+
 BNode.java : Contem os BNodes usados pela MyBtree
+
 MyBTree.java : Arvore B usada para guardar os indices.
+
 Index.java    : Utilizado como classe Model para guardar o ID e o Byte_Offset de cada registro.
