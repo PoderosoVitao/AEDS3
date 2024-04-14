@@ -2,7 +2,6 @@ package src.code;
 
 import javax.swing.tree.TreeNode;
 
-// Implementação esquizofrênica e não otimizada de nós de arvode B com ordem N
 public class BNode {
 
     public int ordem;
