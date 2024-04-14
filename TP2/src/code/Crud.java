@@ -348,6 +348,9 @@ public class Crud {
                 header.writeMeta(meta);
                 header.close();
 
+                // Retirar do índice.
+                this.BTreeIndex.remove(newModel.getDb_id());
+
                 // Escrever o dado novo.
                 return this.create(newModel);
             }
