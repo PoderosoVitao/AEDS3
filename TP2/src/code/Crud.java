@@ -13,12 +13,14 @@ public class Crud {
     private String filepath; // Base de dados tratada.
     private String indexPath; // Arquivo de índices em B-tree
     private MyBTree BTreeIndex;
+    public Metadata meta; // Metadados do arquivo.
 
     private Crud()
     {
         filepath = null;
         indexPath = null;
         BTreeIndex = null;
+        meta = null;
     }
 
     public Crud(String filepath)
@@ -26,6 +28,7 @@ public class Crud {
         this.filepath = filepath;
         this.indexPath = null;
         BTreeIndex = null;
+        meta = this.getData();
     }
 
     public Crud(String filepath, String indexPath)
@@ -33,6 +36,7 @@ public class Crud {
         this.filepath = filepath;
         this.indexPath = indexPath;
         BTreeIndex = MyBTree.importTree(indexPath);
+        meta = this.getData();
     }
 
     // Checa se o arquivo tem um caminho valido.
@@ -236,6 +240,19 @@ public class Crud {
         try {
             header.openWriteAppend();
             header.writeModel(a);
+            header.close();
+
+            // Ler o byteOffset do último registro:
+
+            header.openEdit();
+            // Posicionar cabeçote
+            Boolean exists = false;
+            if(this.BTreeIndex != null) header.seekIndex(meta.getLastId(), BTreeIndex);
+            else header.seekLinear(meta.getLastId());
+            Model readModel = new Model(header.RAF);
+            Index newIndice = new Index(a.getDb_id(), a.getByteSize() + readModel.getByteSize());
+            // Escrever índice
+            BTreeIndex.insert(newIndice);
 
         } catch (Exception e) {
             header.close();
@@ -397,6 +414,11 @@ public class Crud {
             MyIO.println("Erro GETDATA");
             return null;
         }
+    }
+
+    public void saveBTree()
+    {
+        this.BTreeIndex.export(this.indexPath);
     }
 
 }
