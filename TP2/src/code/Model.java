@@ -1,7 +1,6 @@
 package src.code;
 
 import java.io.RandomAccessFile;
-import java.io.UTFDataFormatException;
 
 /*
  * Arquivo que descreve o modelo das entities do dataset usado.

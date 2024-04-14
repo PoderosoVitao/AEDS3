@@ -1,7 +1,5 @@
 package src.code;
 
-import java.io.File;
-
 /*
  * Arquivo.java         = Contém metodos de manipulação de arquivos em memória secundária e primária.
  * MyIO.java            = Contém metodos de entrada e saida (I/O) de dados.
