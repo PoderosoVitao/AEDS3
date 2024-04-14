@@ -14,20 +14,30 @@ import java.io.File;
 public class Main {
     public static void main (String[] args) {
 
+        // TESTE ARVORE B
+    /*
         MyBTree BTree = new MyBTree(8);
         Index tempIn = new Index(0, 0);
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 100; i++) {
             tempIn.byteOffset = i * 2;
             tempIn.id = i;
             
             BTree.insert(tempIn);
         }
 
-        BTree.remove(5);
+        for (int i = 0; i < 93; i++) {         
+            BTree.remove(i);
+        }
+        
+        for (int i = 93; i < 100; i++) {         
+            BTree.remove(i);
+        }
+        tempIn = null;
 
         if(BTree == null){};
 
-        /*
+        */
+        // /*
         int option = -1;
 
         MyIO.println("__/\\\\\\________/\\\\\\___________________________________________________/\\\\\\\\\\\\\\\\\\\\\\\\_____/\\\\\\\\\\\\\\\\\\\\\\\\\\___        ");
@@ -53,16 +63,14 @@ public class Main {
         String filepath = MyIO.readString();
         Crud myCrud = new Crud(filepath, indexFilepath);
 
-        Metadata meta = null;
 
         while (option != 0)
         {
-            meta = myCrud.getData();
-            MyIO.println("Registros Validos Encontrados: #" + meta.getRegNum());
-            MyIO.println("Ultimo Registro No Programa: #" + meta.getLastId());
-            MyIO.println("Proximo ID inserido sera:  #" + meta.getNextId());
-            MyIO.println("Numero de Lapides:  #" + meta.getLapideNum());
-            MyIO.println("Numero de Registros Fora De Posicao (OOP):  #" + meta.getOOPNum());
+            MyIO.println("Registros Validos Encontrados: #" + myCrud.meta.getRegNum());
+            MyIO.println("Ultimo Registro No Programa: #" + myCrud.meta.getLastId());
+            MyIO.println("Proximo ID inserido sera:  #" + myCrud.meta.getNextId());
+            MyIO.println("Numero de Lapides:  #" + myCrud.meta.getLapideNum());
+            MyIO.println("Numero de Registros Fora De Posicao (OOP):  #" + myCrud.meta.getOOPNum());
             
             MyIO.println("0 -> Sair do Programa\n" +
                                       "1 -> Recarregar primeiros 1000 registros de cada Dataset\n" +
@@ -75,6 +83,7 @@ public class Main {
             switch (option) {
                 case 0:
                     option = 0;
+                    myCrud.saveBTree();
                     break;
                 case 1:
                     MyIO.println("Favor copie e cole o caminho até os datasets Backup");
@@ -99,8 +108,7 @@ public class Main {
                     MyIO.println("Operacao invalida.\n");
                 break;
             }
-            option = MyIO.readInt();
-        }*/
+        } // */
     }
 }
 
@@ -213,6 +221,14 @@ public class Main {
  *      |\_> Crud.java   : Mudança temporaria para facilitar testes. Carrega apenas 10 registros de cada dataset no ReloadDB().
  *       \_> MyDLL.java  : Remove a subclasse Node e coloca ela em um arquivo próprio.
  *
- *  03/28/2024 10:44 UTC-3 - 1.3.0
+ *  04/12/2024 10:44 UTC-3 - 1.3.0
  *      Muitas mudanças com o foco em implementar e melhorar a inserção da arvore B.
+ * 
+ *  04/13/2024 22:44 UTC-3 - 1.4.0
+ *      Adição do protótipo do metodo Remove.
+ *
+ *  04/14/2024 16:30 UTC-3 - 2.0.0
+ *      Main -> Previsão de testes para indice B adicionada e comentada no inicio
+ *      MyBTree.java -> Metodos de remoção e inserção testados e aperfeiçoados.
+ *      Crud -> Crud sempre tenta buscar pelo índice, e depois linearmente, se não existir.
  */
