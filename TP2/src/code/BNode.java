@@ -36,6 +36,7 @@ public class BNode {
         return i;
     }
 
+    // Inserção na arvore B
     public void insert(Index indice)
     {
         if(this.isLeaf() == false)
@@ -86,6 +87,7 @@ public class BNode {
         }
     }
 
+    // Split da B-tree apos inserção
     public void split()
     {
         BNode leftNode = new BNode(ordem, tree);
@@ -155,9 +157,197 @@ public class BNode {
 
     }
 
-    public int remove(int pos)
-    {
-        return 0;
+    public Index remove(long key) {
+
+        Index returnIndex = null;
+
+        BNode targetNode = this.huntNode(key);
+        if (targetNode == null) return returnIndex;
+
+        int targetPosition = 0;
+        while (targetNode.data[targetPosition].id != key) targetPosition++;
+        BNode parentNode1 = targetNode.findParent();
+        int positionInRegardsToTheParentNode = 0;
+
+        while (targetNode.next[positionInRegardsToTheParentNode]!= targetNode) positionInRegardsToTheParentNode++;
+
+        /*  #############################################################
+           ### Casos 1.x = O nó é uma folha, ou uma cabeça sem folhas. ###
+            ############################################################# */
+        if(targetNode.isLeaf()){
+            // Caso 1.1 = Remover o nó não faz com que a folha tenha menos do que ordem/2 elementos.
+            // Ou estamos no nó cabeça sem folhas.
+            if(targetNode.dataSize > ordem / 2 || (parentNode1 == null && targetNode.leavesNum == 0)){
+                for (Index index : targetNode.data) if(index.id == key) index = null;
+                    for (int i = 0; i < dataSize; i++) {
+                        if(targetNode.data[i] == null)
+                        {
+                            targetNode.data[i] = targetNode.data[i+1];
+                            targetNode.data[i+1] = null;
+                        }
+                }
+                targetNode.dataSize--;
+            }
+            else if(parentNode1 != null)
+            {
+                BNode sideNode = null;
+                // Caso 1.2 = O nó tem Datasize igual a ordem/2 ou menor.
+
+                // Caso 1.2.1 -> Se o vizinho da esquerda poder emprestar um, rodamos a árvore com ele.
+                if((positionInRegardsToTheParentNode - 1) >= 0 &&
+                    parentNode1.next[positionInRegardsToTheParentNode - 1] != null &&
+                    parentNode1.next[positionInRegardsToTheParentNode - 1].dataSize > ordem/2 ){ 
+                    sideNode = parentNode1.next[positionInRegardsToTheParentNode - 1];
+                    // Pegar o elemento mais da direita.
+                    Index tempIndex = null;
+                    for (int i = 0; i < sideNode.dataSize; i++) {
+                        if(sideNode.data[i] == null)
+                        {
+                            tempIndex = sideNode.data[i -1];
+                            sideNode.data[i - 1] = null;
+                            sideNode.dataSize -= 1;
+                            break;
+                        }
+                    }
+
+                    // Descer o elemento mais a esquerda do pai e substitui-lo pelo elemento do filho.
+                    targetNode.data[targetPosition] = parentNode1.data[0];
+                    parentNode1.data[0] = tempIndex;
+
+                    // Sortear a folha para garantir que tudo está em ordem.
+                    // Insertion sort.
+                    for (int i = 1; i < targetNode.dataSize; i++) {
+                        Index a = targetNode.data[i];
+                        int j = i;
+                        while ((j > 0) && (a.id < targetNode.data[j - 1].id)) {
+                            targetNode.data[j] = targetNode.data[j - 1];
+                            j-= 1;
+                        }
+                        targetNode.data[j] = a;
+                    }
+
+                }
+
+                // Caso 1.2.2 -> Se o vizinho da direita poder emprestar um, rodamos a árvore com ele.
+                else if((positionInRegardsToTheParentNode - 1) >= 0 && 
+                    parentNode1.next[positionInRegardsToTheParentNode + 1] != null &&
+                    parentNode1.next[positionInRegardsToTheParentNode + 1].dataSize > ordem/2){
+                    sideNode = parentNode1.next[positionInRegardsToTheParentNode + 1];
+                    // Pegar o elemento mais da esquerda.
+                    Index tempIndex = sideNode.data[0];
+                    for (int i = 0; i < sideNode.dataSize; i++) {
+                        if(sideNode.data[i + 1] != null) sideNode.data[i] = sideNode.data[i+1];
+                    }
+                    sideNode.dataSize--;
+                    
+                    // Descer o elemento mais a direita do pai e substitui-lo pelo elemento do filho.
+                    int pos = 0;
+                    while(parentNode1.data[pos] != null) pos++;
+
+                    targetNode.data[targetPosition] = parentNode1.data[pos - 1];
+                    parentNode1.data[pos - 1] = tempIndex;
+
+                    // Sortear a folha para garantir que tudo está em ordem.
+                    // Insertion sort.
+                    for (int i = 1; i < targetNode.dataSize; i++) {
+                        Index a = targetNode.data[i];
+                        int j = i;
+                        while ((j > 0) && (a.id < targetNode.data[j - 1].id)) {
+                            targetNode.data[j] = targetNode.data[j - 1];
+                            j-= 1;
+                        }
+                        targetNode.data[j] = a;
+                    }
+                }
+            
+                // Caso 1.2.3 -> Nenhum dos vizinhos podem emprestar uma migalha de índice.
+                else{
+
+                    // if(parentNode1.dataSize <= ordem/2) parentNode1.borrowFromNearestNode();
+                    // TODO: borrowFromNearestNode();
+                
+                    // Nesse caso, descemos um elemento do topo para uma das folhas.
+                    Index parentElementToLowerDown = null;
+                    int positionOfTakenElement = 0;
+                    if (positionInRegardsToTheParentNode > 1) {
+                        positionOfTakenElement = positionInRegardsToTheParentNode - 1;
+                    }
+                    parentElementToLowerDown = parentNode1.data[positionOfTakenElement];
+                    
+                    // Sempre fazemos o troca-troca com o elemento à esquerda.
+                    int positionOfElementToMergeWith = positionInRegardsToTheParentNode - 1;
+                    if (positionInRegardsToTheParentNode == 0) positionOfElementToMergeWith = 1;
+                    BNode sidenode = parentNode1.next[positionOfElementToMergeWith];
+
+                    // Fazer merge nos dois nodes, mais o node de cima.
+                    targetNode.data[targetPosition] = null;
+                    targetNode.dataSize--;
+
+                    {
+                        for (int i = 0, j = 0; i < ordem; i++) {
+                                if(targetNode.data[i] == null)
+                                {
+                                    if(sideNode.data[j] != null)
+                                    {
+                                    targetNode.data[i] = sideNode.data[j];
+                                    sideNode.data[j] = null;
+                                    sideNode.dataSize--;
+                                    targetNode.dataSize++;
+                                    j++;
+                                    }
+                                    else
+                                    {
+                                        targetNode.data[i] = parentElementToLowerDown;
+                                        break;
+                                    }
+                                }
+                        }
+                    }
+
+                    // Sortear a folha para garantir que tudo está em ordem.
+                    // Insertion sort.
+                    for (int i = 1; i < targetNode.dataSize; i++) {
+                        Index a = targetNode.data[i];
+                        int j = i;
+                        while ((j > 0) && (a.id < targetNode.data[j - 1].id)) {
+                            targetNode.data[j] = targetNode.data[j - 1];
+                            j-= 1;
+                        }
+                        targetNode.data[j] = a;
+                    }
+
+                    parentNode1.data[positionOfTakenElement] = null;
+                    parentNode1.dataSize--;
+                    // Re-ordenar Next e Data
+                    for (int i = 0; i < ordem - 1; i++) {
+                        if(parentNode1.data[i] == null) 
+                        {
+                            parentNode1.data[i] = parentNode1.data[i+1];
+                            parentNode1.data[i+1] = null;
+                        }
+                    }
+
+                    parentNode1.next[positionInRegardsToTheParentNode] = null;
+                    parentNode1.leavesNum--;
+
+                    for (int i = 0; i < ordem; i++) {
+                        if(parentNode1.next[i] == null) 
+                        {
+                            parentNode1.next[i] = parentNode1.next[i+1];
+                            parentNode1.next[i+1] = null;
+                        }
+                    }
+                }
+            }
+        }
+
+        /*  #############################################################
+            ###         Casos 2.x = O nó não é uma folha.             ###
+            ############################################################# */
+
+                // TODO Casos 2.x
+
+        return null;
     }
 
     // Calcula a quantidade de registros validos e o tamanho das folgas.
@@ -230,6 +420,34 @@ public class BNode {
                 }
             }
         }
+    }
+
+    // Retorna o BNode que contém uma determinada chave.
+    public BNode huntNode (long key)
+    {
+        BNode returnNode = null;
+        boolean found = false;
+        int i = 0;
+
+        for (Index index : data) {
+            if(index.id == key)
+            {
+                returnNode = this;
+                found = true;
+                return returnNode;
+            }
+        }
+
+        while(found == false && i < this.leavesNum)
+        {
+            if (key < returnNode.data[i].id)
+            {
+                return returnNode.next[i].huntNode(key);
+            }
+            else i += 1;
+        }
+
+        return returnNode;
     }
 
 }

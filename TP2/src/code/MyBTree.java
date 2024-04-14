@@ -41,26 +41,9 @@ public class MyBTree {
         this.head.insert(indice);
     }
 
-    public int remove(long id)
-    {
-        return remove(id, head);
-    }
-
-    // Remover indice na árvore carregada em memória principal
-    public int remove(long id, BNode target)
-    {
-        if(target == null) return 0;
-
-        int pos = 0;
-        for (Index index : target.data) {
-            if(pos == target.dataSize) return remove(id, target.next[pos]); // No more indexes. Check the last 'next[]' bnode
-            if(index == null || id < index.id) return remove(id, target.next[pos]); // It's, maybe, on the Bnode to the LEFT of this index.
-            if(id == index.id) return target.remove(pos); // Found!
-            pos++; // Check the next Index...
-        }
-
-        return remove(id, target.next[pos]); // It's, maybe, on the last B-tree. Unless it's null.
-    }
+    public Index remove(long key) {
+        return this.head.remove(key);
+      }
 
     // Busca recursiva de índice com base no ID
     public Index search(long id)
