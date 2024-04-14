@@ -14,6 +14,20 @@ import java.io.File;
 public class Main {
     public static void main (String[] args) {
 
+        MyBTree BTree = new MyBTree(8);
+        Index tempIn = new Index(0, 0);
+        for (int i = 0; i < 8; i++) {
+            tempIn.byteOffset = i * 2;
+            tempIn.id = i;
+            
+            BTree.insert(tempIn);
+        }
+
+        BTree.remove(5);
+
+        if(BTree == null){};
+
+        /*
         int option = -1;
 
         MyIO.println("__/\\\\\\________/\\\\\\___________________________________________________/\\\\\\\\\\\\\\\\\\\\\\\\_____/\\\\\\\\\\\\\\\\\\\\\\\\\\___        ");
@@ -86,7 +100,7 @@ public class Main {
                 break;
             }
             option = MyIO.readInt();
-        }
+        }*/
     }
 }
 
