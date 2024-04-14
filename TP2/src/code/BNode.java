@@ -1,7 +1,4 @@
 package src.code;
-
-import javax.swing.tree.TreeNode;
-
 public class BNode {
 
     public int ordem;
