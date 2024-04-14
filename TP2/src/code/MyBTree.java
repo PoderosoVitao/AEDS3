@@ -113,7 +113,6 @@ public class MyBTree {
 
                 returnTree.insert(tempIndex);
             }
-            returnTree.camninha();
 
         } catch (Exception e) {
             MyIO.println("Erro metodo Import MyBTree!");

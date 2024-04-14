@@ -8,7 +8,14 @@ import java.io.File;
  * Model.java           = Modelo de cada entidade do dataset, e metodos para construção / tratamento.
  * Crud.java            = Classe de abstração. Age como mensageiro entre Main e as outras classes, exceto a classe FolderNavigator
  * Main.java            = Arquivo principal que deve ser compilado e executado.
+ * MyDLL.java           = Lista utilizada para carregar índices da base de dados não tratada.
  * FolderNavigator.java = Classe para a GUI do programa. TODO.
+ * Node.java            = Contém os nodes usados pelo MyDLL.
+ * BNode.java           = Contém os nodes usadas pelo arquivo de índice MyBTree.
+ * MyBTree.java         = Implementação de árvore B para guardar índices.
+ * Index.java           = Par Id - ByteOffset usado como ponteiro para a classe Arquivo.
+ * Metadata.java        = Classe que guarda metadados sobre a base de dados.
+ * 
  */
 
 public class Main {
