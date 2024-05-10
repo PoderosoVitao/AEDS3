@@ -256,4 +256,32 @@ public class Arquivo {
 
         return false;   
     }
+
+    // Converte um arquivo inteiro em uma string de simbolos.
+    public String arqToString()
+    {
+        try{
+        long byteOffset = 0;
+
+        Metadata meta = this.readMeta();
+        byteOffset += 36;
+        
+        // Add all meta chars to our unicode array.
+        String metaBuffer = "" + meta.getFileSize() + meta.getLapideNum() + 
+                             meta.getLastId() + meta.getNextId() + 
+                             meta.getOOPNum() + meta.getRegNum();
+
+        // Make models out of all entries and add them to the unicode array. -- O(n) complexity
+        while(byteOffset < meta.getFileSize())
+        {
+            Model buffer = new Model(this.RAF);
+            byteOffset += buffer.getByteSize();
+            metaBuffer += buffer.printCompact();
+        }
+        return metaBuffer;
+        } catch (Exception e) {
+            MyIO.println("Erro arqToString!!");
+        }    
+        return null;
+    }
 }
