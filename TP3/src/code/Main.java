@@ -49,7 +49,8 @@ public class Main {
         String filepath = MyIO.readString();
         try
         {
-            Huffman.buildHeap(filepath);
+            Huffman huff = new Huffman();
+            huff.compactDB(filepath);
         }catch (Exception e) {
 
         }

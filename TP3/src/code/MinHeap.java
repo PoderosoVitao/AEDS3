@@ -15,13 +15,37 @@ public class MinHeap {
         NodeIntCharList tempList = new NodeIntCharList();
         for (int i = 0; i < frequencies.length; i++) {
             tempList.insert(frequencies[i]);
+            this.elemNum++;
         }
 
         tempList.joinNodesRecursive();
-        int a = 5;
-
+        this.head = tempList.head.getData();
     }
 
+    public String[] fetchBinCodes()
+    {
+        String[] binArray = new String[65536];
+
+        // Realizar o caminhamento.
+        String caminho = "";
+        fetchBinCodes(head, binArray, caminho);
+
+
+        return binArray;
+    }
+
+    private void fetchBinCodes(NodeIntChar node, String[] binArray, String caminho)
+    {
+        String caminhoNext = "";
+        caminhoNext += caminho;
+
+        if(node != null){
+            if(node.getCharac() != '¨') binArray[(int) node.getCharac()] = caminho;
+            if(node.getLeft() != null) fetchBinCodes(node.getLeft(), binArray, caminhoNext + "0");
+            if(node.getRight() != null) fetchBinCodes(node.getRight(), binArray, caminhoNext + "1");
+        }
+
+    }
 
     // Inserir um Node já pronto
     private void insertNode(char a, int b)
