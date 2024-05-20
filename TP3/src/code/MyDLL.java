@@ -186,17 +186,16 @@ public class MyDLL {
     // Returns the size in bytes of all entries.
     public long getByteSize()
     {
-        if(head != null) return getByteSize(head);
-        return 0;
-    }
-    public static long getByteSize(Node cuPos)
-    {
-        if(cuPos != null)
+        long byteSi = 0;
+        if(head != null)
         {
-            long sizeBT = cuPos.getData().getByteSize();
-            return (sizeBT + getByteSize(cuPos.getNext()));
+            Node transverseNode = head;
+            while (transverseNode != null) {
+                byteSi += transverseNode.getData().getByteSize();
+                transverseNode = transverseNode.getNext();
+            }
         }
-        return 0;
+        return byteSi;
     }
 
 }

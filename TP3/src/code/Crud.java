@@ -50,10 +50,10 @@ public class Crud {
     // Esse metodo sempre sobreescreve todo o arquivo.
     public boolean reloadDB ()
     {
-        return reloadDB("E:/Software/Programming/Github/AEDS3/Database/t/");
+        return reloadDB("E:/Software/Programming/Github/AEDS3/Database/t/", 1000);
     }
 
-    public boolean reloadDB(String path)
+    public boolean reloadDB(String path, int num)
     {
         Arquivo header = new Arquivo(filepath);
         String backupDBsAddress = "E:/Software/Programming/Github/AEDS3/Database/t/";
@@ -64,7 +64,7 @@ public class Crud {
             else return false;
         }
 
-        MyDLL allEntriesFromBackupDBs = loadBackupDBIntoDLL(backupDBsAddress);
+        MyDLL allEntriesFromBackupDBs = loadBackupDBIntoDLL(backupDBsAddress, num);
 
         try {
             header.openWrite();
@@ -117,7 +117,7 @@ public class Crud {
     }
 
     // Metodo que carrega todos os Backups em uma DLL, e os trata.
-    public static MyDLL loadBackupDBIntoDLL (String path)
+    public static MyDLL loadBackupDBIntoDLL (String path, int num)
     {
         String[] dbNames = {"USvideos.csv", "DEvideos.csv", "FRvideos.csv",
                             "GBvideos.csv", "INvideos.csv", /*"JPvideos.csv",*/
@@ -143,7 +143,7 @@ public class Crud {
             MyIO.println("Loading from DB: " + dbNames[i]);
             try
             {
-                tempDLL = loadBackupDBIntoDLL (path + dbNames[i], countryCodes[i], db_id);
+                tempDLL = loadBackupDBIntoDLL (path + dbNames[i], countryCodes[i], db_id, num);
                 returnDLL.mergeDLLs(tempDLL);
             } catch (Exception e) {
                 MyIO.println("ERROR DB: " + dbNames[i]); 
@@ -153,7 +153,7 @@ public class Crud {
     }
 
     // Metodo que carrega e insere cada linha em uma DLL.
-    public static MyDLL loadBackupDBIntoDLL (String path, char code[], int[] db_id) throws Exception
+    public static MyDLL loadBackupDBIntoDLL (String path, char code[], int[] db_id, int num) throws Exception
     {
         Model tempModel = null;
         MyDLL returnList = new MyDLL();
@@ -163,7 +163,7 @@ public class Crud {
         dataset.readLineUntreated(); // Pular a primeira linha, que sempre contém apenas metadados.
         loadBuffer = dataset.readLineContinuous(); // Ler a segunda linha, que já contem informações.
         int i = 0; // Limits how many entries to read per dataset.
-        while(loadBuffer.length() > 2 && (loadBuffer.equals("null") == false) && i < 50)
+        while(loadBuffer.length() > 2 && (loadBuffer.equals("null") == false) && i < num)
         {
             if(db_id[0] % 1000 == 0)
             {
@@ -220,7 +220,11 @@ public class Crud {
             ///////////////////////// ATUALIZAR ÍNDICE B tree, se existir.
             if(indexPath != null)
             {
-
+                if(this.BTreeIndex != null) header.seekIndex(meta.getLastId(), BTreeIndex);
+                else header.seekLinear(meta.getLastId());
+                Model readModel = new Model(header.RAF);
+                Index newIndice = new Index(a.getDb_id(), a.getByteSize() + readModel.getByteSize());
+                BTreeIndex.insert(newIndice);
             }
             
 

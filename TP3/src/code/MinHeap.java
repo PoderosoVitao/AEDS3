@@ -2,7 +2,7 @@ package src.code;
 
 public class MinHeap {
     
-    private NodeIntChar head;
+    public NodeIntChar head;
     private int elemNum;
 
     // Constroi MinHeap a partir de um array com frequencias
@@ -18,7 +18,7 @@ public class MinHeap {
             this.elemNum++;
         }
 
-        tempList.joinNodesRecursive();
+        tempList.joinNodesAll();
         this.head = tempList.head.getData();
     }
 
@@ -40,9 +40,11 @@ public class MinHeap {
         caminhoNext += caminho;
 
         if(node != null){
-            if(node.getCharac() != '¨') binArray[(int) node.getCharac()] = caminho;
+            if(node.getLeft() == null && node.getRight() == null ) binArray[(int) node.getCharac()] = caminho;
+            else{
             if(node.getLeft() != null) fetchBinCodes(node.getLeft(), binArray, caminhoNext + "0");
             if(node.getRight() != null) fetchBinCodes(node.getRight(), binArray, caminhoNext + "1");
+            }
         }
 
     }
@@ -121,18 +123,21 @@ class NodeIntCharList {
             }
             else
             {
-                NodeIntCharHolder insertPosition = last;
-                while(insertPosition.getPrev() != null && insertPosition.getData().getCount() > a.getCount())
-                {
-                    insertPosition = insertPosition.getPrev();
+                NodeIntCharHolder positionWeWillInsertTempIn = this.head;
+                while(temp.getData().getCount() > positionWeWillInsertTempIn.data.getCount() && positionWeWillInsertTempIn.getNext() != null)
+                    positionWeWillInsertTempIn = positionWeWillInsertTempIn.getNext();
+                
+                if(positionWeWillInsertTempIn.getPrev() != null){
+                positionWeWillInsertTempIn.getPrev().setNext(temp);
+                temp.setNext(positionWeWillInsertTempIn);
+                temp.setPrev(positionWeWillInsertTempIn.getPrev());
+                positionWeWillInsertTempIn.setPrev(temp);
                 }
-                NodeIntCharHolder nextPtr = insertPosition.getNext();
-
-                insertPosition.setNext(temp);
-                nextPtr.setPrev(temp);
-
-                temp.setPrev(insertPosition);
-                temp.setNext(nextPtr);
+                else{ 
+                    temp.setNext(positionWeWillInsertTempIn);
+                    positionWeWillInsertTempIn.setPrev(temp);
+                    head = temp;
+                }
             }
         }
         elemNum++;
@@ -140,23 +145,30 @@ class NodeIntCharList {
 
     public NodeIntChar pop()
     {
-        if(head == null) return null;
-        NodeIntCharHolder temp = head;
+        NodeIntChar returnVal = head.getData();
         head = head.getNext();
+        if(head != null) head.setPrev(null);
         elemNum--;
-        return temp.getData();
+
+        return returnVal;
     }
 
-    public void joinNodesRecursive()
+    public void joinNodesAll()
     {
         // The two leftmost nodes always have the smallest frequency.
-        NodeIntChar temp = new NodeIntChar('¨', 0);
-        temp.setLeft(this.pop()); 
-        temp.setRight(this.pop());
-        temp.setCount(temp.getLeft().getCount() + temp.getRight().getCount());
-        insertSorted(temp);
+        while(this.head != this.last && elemNum > 1)
+        {
+            NodeIntChar temp = new NodeIntChar((char) 0, 0);
+            NodeIntChar leftBuffer = this.pop();
+            NodeIntChar rightBuffer = this.pop();
 
-        if(elemNum > 1) this.joinNodesRecursive();
+            temp.setRight(rightBuffer);
+            temp.setLeft(leftBuffer);
+            temp.setCount(temp.getLeft().getCount() + temp.getRight().getCount());
+            temp.setCharac('\0');
+           
+            this.insertSorted(temp);
+        }
     }
 }
 
@@ -196,5 +208,4 @@ class NodeIntCharHolder {
     public void setPrev(NodeIntCharHolder prev) {
         this.prev = prev;
     }
-    
 }

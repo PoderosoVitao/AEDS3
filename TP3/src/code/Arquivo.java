@@ -267,9 +267,9 @@ public class Arquivo {
         byteOffset += 36;
         
         // Add all meta chars to our unicode array.
-        String metaBuffer = "" + meta.getFileSize() + meta.getLapideNum() + 
-                             meta.getLastId() + meta.getNextId() + 
-                             meta.getOOPNum() + meta.getRegNum();
+        String metaBuffer = "" + meta.getFileSize() + ',' + meta.getLapideNum() + ',' +
+                             meta.getLastId() + ',' + meta.getNextId() + ',' +
+                             meta.getOOPNum() + ',' + meta.getRegNum() + ',';
 
         // Make models out of all entries and add them to the unicode array. -- O(n) complexity
         while(byteOffset < meta.getFileSize())
