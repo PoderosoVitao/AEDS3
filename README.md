@@ -41,3 +41,17 @@ BNode.java : Contem os BNodes usados pela MyBtree
 MyBTree.java : Arvore B usada para guardar os indices.
 
 Index.java    : Utilizado como classe Model para guardar o ID e o Byte_Offset de cada registro.
+
+* TP 3: 2.2.0 > 3.0.0+
+Base de dados com índice, compressão e descompactação.
+Mesma estrutura do TP2, mais:
+
+TimeSpace.java : Classe utilizada para medir fator de compressão, tempo decorrido, etc.
+
+LZW.java : Classe para a compactação LZW.
+
+Huffman.java : Classe para a compactação Huffman
+
+DictionaryHash.java : Dicionario usado pela LZW.
+
+MinHeap.java : Heap Mínimo utilizado pela Huffman
