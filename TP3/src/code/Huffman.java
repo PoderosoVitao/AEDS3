@@ -1,74 +1,169 @@
 package src.code;
 
-import java.io.*;
+import java.io.File;
 
-public class Huffman {
+public class Huffman extends TimeSpace {
 
-    // Guarda quantidade de caractéres.
-    private int wordAmount = 0;
+    // Decompressiona o arquivo.
+    public void decompressDB (String dataSetPath) throws Exception
+    {
+        MyIO.println("Huffman - Descompactacao -- " +"Processando... --" + " Abrindo arquivo comprimido -- 1/6");   
+        String dataSetAdd = dataSetPath + "HuffmanCompressao1";
+        Arquivo header = new Arquivo(dataSetAdd);
+        File fileIn = new File(dataSetAdd);
+        header.openEdit();
+        // Read binarray stored in file.
+        MyIO.println("Huffman - Descompactacao -- " +"Processando... --" + " Lendo arquivo comprimido -- 2/6");
+        long byteOffset = header.RAF.readLong();
+        long totalSize = new File(dataSetAdd).length();
+
+        MyIO.println("Huffman - Descompactacao -- " +"Processando... --" + " Lendo Frequencias salvas -- 3/6");
+        int[] freqArray = readBinInfo(header);
+
+        MyIO.println("Huffman - Descompactacao -- " +"Processando... --" + " Re-construindo Heap -- 4/6");
+        MinHeap codeHeap = buildHeap(freqArray);
+
+        MyIO.println("Huffman - Descompactacao -- " +"Processando... --" + " Descompactando Arquivo -- 5/6");
+
+        Arquivo output = new Arquivo(dataSetPath);
+        output.openWrite();
+
+        try {
+            byte readBuffer = 0;
+            int opBuffer = 0;
+            treeRunner runner = new treeRunner(codeHeap);
+            while(header.RAF.getFilePointer() < totalSize)
+            {
+                readBuffer = header.RAF.readByte();
+                byteOffset++;
+                for (int i = 0; i < 8; i++) {
+                    opBuffer = (readBuffer >> 7) & 1;
+                    readBuffer = (byte) (readBuffer << 1);
+                    int test = runner.transverse(opBuffer, output, header.RAF.getFilePointer() >= totalSize - 2);
+                }
+                if(header.RAF.getFilePointer() % 1000000 == 0) MyIO.println(header.RAF.getFilePointer()/1000000 +
+                     "/" + totalSize/1000000 + "MB");
+            }
+        } catch (Exception e) {
+            header.close();
+            output.close();
+        }
+        header.close();
+        output.close(); 
+        
+        MyIO.println("Huffman - Descompactação -- Arquivo Descompactado -- 6/6");
+    }
 
     public void compactDB (String dataSetPath) throws Exception
     {
-        MinHeap codeHeap = buildHeap(dataSetPath);
+        MyIO.println("Huffman - Compactacao -- " + "Processando..." + " -- Encontrando Frequencia de cada Caractere -- 1/6");
+        int[] letterFrequency = Huffman.getFrequency(dataSetPath);
+
+        MyIO.println("Huffman - Compactacao -- " +"Processando..." + " -- Construindo Heap -- 2/7");
+        MinHeap codeHeap = buildHeap(letterFrequency);
 
         // Construir um array índice contendo os códigos de cada letra.
         // O 'valor' unicode da letra é a sua posição no array.
-
+        MyIO.println("Huffman - Compactacao -- " + "Processando..." + " -- Fazendo o Hashing Char - Caminho HEAP -- 3/6");
         String[] binArray = codeHeap.fetchBinCodes();
         
         // Por exemplo, o caractére 'a' tem valor ascii de '97'
         // A string na posição 97 do binArray (binArray[97]) corresponde ao caminho para se chegar a 'a'.
 
-        String dataSetAdd = dataSetPath + "Huffman-V1.huff";
+        String dataSetAdd = dataSetPath + "HuffmanCompressao1";
         
-        Arquivo header = new Arquivo(dataSetPath);
-        header.openEdit();
-        String entireDBinOneString = header.arqToString();
-        header.close();
+        Arquivo input = new Arquivo(dataSetPath);
+        File fInput = new File(dataSetPath);
+        input.openEdit();
 
-        header = new Arquivo(dataSetAdd);
-        header.openEdit();
+        Arquivo header = new Arquivo(dataSetAdd);
+        header.openWrite();
 
-        // TODO: Save binArray information to de-compress the file later.
+        MyIO.println("Huffman - Compactacao -- " + "Processando..." + " -- Salvando HEAP no Arquivo -- 4/6");
+
+        // Save binArray information to de-compress the file later.
+        long bitAmount = saveBinInfo(letterFrequency, header);
 
         // Read and write until END OF FILE.
         BitAccumulator bitWriter = new BitAccumulator();
 
+
+        MyIO.println("Huffman - Compactacao -- " + "Processando..." + " -- Escrevendo Caracteres -- 5/6");
+        int pos = 0;
+        Boolean lastByte = false;
+        Boolean hasWritten = false;
         try {
-        for (int i = 0; i < entireDBinOneString.length(); i++) {
-            int pos = (char) entireDBinOneString.charAt(i);
-            String codeBuffer = binArray[pos];
-            if(codeBuffer == null)
-            {
-                codeBuffer = "";
-
-
-                /*
-                 * Due to the way we generate our index, 
-                 * every single character in the DB should be mapped to a corresponding hash
-                 * in our binArray.
-                 */
-
-                // This should never happen.
-                // And yet it does.
+            for (int i = 0; i < fInput.length();) {
+                if(i < fInput.length() - 1){
+                    pos = (int) input.RAF.readChar();
+                    i +=2;
+                }
+                else {
+                    pos = (int) input.RAF.readByte();
+                    i +=1;
+                    lastByte = true;
+                }
+                String codeBuffer = binArray[pos];
+                if(codeBuffer == null)
+                {
+                    codeBuffer = "";
+                }
+                for (int j = 0; j < codeBuffer.length(); j++) {
+                    hasWritten = bitWriter.writeBit(codeBuffer.charAt(j), header);
+                }
+                if(i % 1000000 == 0) MyIO.println(i / 1000000 + " MegaBits escritos.");
             }
-            //if(i % 1000 == 0) MyIO.println("i = " + i);
-            for (int j = 0; j < codeBuffer.length(); j++) {
-                bitWriter.writeBit(codeBuffer.charAt(j), header);
-            }
-        }
+            if(!hasWritten && lastByte) bitWriter.forceWrite(header);
         } catch (Exception e) {
             MyIO.println("Erro!");
         }
 
-        header.close();
+        MyIO.println("Huffman - Compactacao -- " + "Arquivo compactado! --" + " 6/6");
 
-        int aaa = 5;
+        MyIO.println(" Bytes Total: "+ (bitWriter.writtenBytes + bitAmount));
+
+        input.close();
+        header.close();
     }
 
-    private MinHeap buildHeap(String dataSetPath) throws Exception
+    // Saves the binArray with codes for each word.
+    private long saveBinInfo(int[] binArray, Arquivo header) throws Exception
     {
-        NodeIntChar[] allNodes = getNodeList(getFrequency(dataSetPath));
+        int toIncrease = 0;
+        for (int a : binArray) if(a > 0) toIncrease++;
+
+        long byteAmount = toIncrease * 6; // char + int = 6
+
+        byteAmount += 16; // long + int = 12
+        header.dosOUT.writeLong(byteAmount);
+        header.dosOUT.writeInt(binArray.length);
+        header.dosOUT.writeInt(toIncrease);
+
+        for (int i = 0; i < binArray.length; i++) {
+            if(binArray[i] > 0)
+            {
+                header.dosOUT.writeChar((char) i);
+                header.dosOUT.writeInt(binArray[i]);
+            }
+        }
+
+        return byteAmount;
+    }
+
+    // Read binArray header to later decompress the file.
+    private int[] readBinInfo(Arquivo header) throws Exception
+    {
+        int num = header.RAF.readInt();
+        int validPositions = header.RAF.readInt();
+        int[] binArray = new int[num];
+        for (int i = 0; i < validPositions; i++) 
+            binArray[(int)header.RAF.readChar()] = header.RAF.readInt();
+        return binArray;
+    }
+
+    private MinHeap buildHeap(int[] dataSetFreq) throws Exception
+    {
+        NodeIntChar[] allNodes = getNodeList(dataSetFreq);
         NodeIntChar.quicksort(allNodes);
         
         // Cria heap que associa cada letra a um código em binário.
@@ -89,48 +184,54 @@ public class Huffman {
         return allNodes;
     }
 
-
     // Construir índice que contêm todos os caractéres no texto e sua frequência
-    private int[] getFrequency(String dataSetPath) throws Exception
+    public static int[] getFrequency(String dataSetPath) throws Exception
     {
         int[] unicodeArray = new int[65536];
         Arquivo header = new Arquivo(dataSetPath);
+        File fileIn = new File(dataSetPath);
         header.openEdit();
         long byteOffset = 0;
-
-        Metadata meta = header.readMeta();
-        byteOffset += 36;
         
-        // Add all meta chars to our unicode array.
-        String metaBuffer = "" + meta.getFileSize() + meta.getLapideNum() + 
-                             meta.getLastId() + meta.getNextId() + 
-                             meta.getOOPNum() + meta.getRegNum();
-
-        // Make models out of all entries and add them to the unicode array. -- O(n) complexity
-        while(byteOffset < meta.getFileSize())
+        if(fileIn.length() % 2 == 1)
         {
-            Model buffer = new Model(header.RAF);
-            byteOffset += buffer.getByteSize();
-            metaBuffer += buffer.printCompact();
+            while(byteOffset < fileIn.length())
+            {
+                if(byteOffset < fileIn.length() - 1){
+                    unicodeArray[(int) header.RAF.readChar()]++;
+                }
+                else {
+                    unicodeArray[(int) header.RAF.readByte()]++;
+                }
+                byteOffset += 2;
+            }
         }
-        this.wordAmount = metaBuffer.length();
-        for (int i = 0; i < wordAmount; i++) unicodeArray[(int) metaBuffer.charAt(i)] += 1;
+        else
+        {
+            while(byteOffset < fileIn.length())
+            {
+                unicodeArray[(int) header.RAF.readChar()]++;
+                byteOffset+= 2;
+            }
+        }
         header.close();
         return unicodeArray;
     }
 }
 
 class BitAccumulator{
+    public long writtenBytes;
     public byte bitWrite;
     public byte count;
 
     BitAccumulator()
     {
+        writtenBytes = 0;
         bitWrite = 0b00000000;
         count = 0;
     }
 
-    public void writeBit(char bit, Arquivo header) throws Exception
+    public Boolean writeBit(char bit, Arquivo header) throws Exception
     {
         if(bit == '0')
         {
@@ -146,8 +247,84 @@ class BitAccumulator{
         if(count >= 8)
         {
             header.dosOUT.writeByte(bitWrite);
+            writtenBytes += 1;
             count = 0;
+            return true;
+        }
+        return false;
+    }
+    public void forceWrite(Arquivo header) throws Exception
+    {
+        while(count < 8)
+        {
+            bitWrite = (byte) (bitWrite << 1);
+            count++;
+        }
+        header.dosOUT.writeByte(bitWrite);
+    }
+}
+
+class treeRunner{
+    MinHeap tree;
+    NodeIntChar currentPTR;
+    private long cycle;
+
+    treeRunner(MinHeap a)
+    {
+        tree = a;
+        currentPTR = a.head;
+    }
+
+    // Percorre o Heap a procura do código de um caractere.
+    public int transverse(int a, Arquivo header, Boolean isSingleByte)
+    {
+        if (a == 0)
+        {
+            currentPTR = currentPTR.getLeft();
+        }
+        else{
+            currentPTR = currentPTR.getRight();
         }
 
+        if(currentPTR.getLeft() == null && currentPTR.getRight() == null)
+        {
+            try {
+                char retchar = currentPTR.getCharac();
+                if(isSingleByte && retchar < 255) header.dosOUT.writeByte(retchar);
+                else header.dosOUT.writeChar(retchar);
+                currentPTR = tree.head;
+                return 1;
+            } catch (Exception e) {
+                MyIO.println("ERRO transverse HUFFMAN");
+            }
+        }
+        cycle++;
+        return -1;
     }
+
+    // Percorre os ultimos bytes, tendo cuidado com um possivel 'padding' no final.
+    public int transverseLast(int a, Arquivo header, int cyc)
+    {
+        if (a == 0)
+        {
+            currentPTR = currentPTR.getLeft();
+        }
+        else{
+            currentPTR = currentPTR.getRight();
+        }
+
+        if(currentPTR.getLeft() == null && currentPTR.getRight() == null)
+        {
+            try {
+                char retchar = currentPTR.getCharac();
+                header.dosOUT.writeChar(retchar);
+                currentPTR = tree.head;
+                return 1;
+            } catch (Exception e) {
+                MyIO.println("ERRO transverse HUFFMAN");
+            }
+        }
+        return -1;
+    }
+
 }

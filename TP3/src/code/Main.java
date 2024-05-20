@@ -1,5 +1,7 @@
 package src.code;
 
+import java.io.File;
+
 /*
  * Arquivo.java         = Contém metodos de manipulação de arquivos em memória secundária e primária.
  * MyIO.java            = Contém metodos de entrada e saida (I/O) de dados.
@@ -19,44 +21,10 @@ package src.code;
 public class Main {
     public static void main (String[] args) {
 
-        // TESTE ARVORE B
-    /*
-        MyBTree BTree = new MyBTree(8);
-        Index tempIn = new Index(0, 0);
-        for (int i = 0; i < 100; i++) {
-            tempIn.byteOffset = i * 2;
-            tempIn.id = i;
-            
-            BTree.insert(tempIn);
-        }
+        // Metodo para facilitar testes.
+        //lazyGen();
 
-        for (int i = 0; i < 93; i++) {         
-            BTree.remove(i);
-        }
         
-        for (int i = 93; i < 100; i++) {         
-            BTree.remove(i);
-        }
-        tempIn = null;
-
-        if(BTree == null){};
-
-        */
-        // /*
-
-        MyIO.println("Exemplo: \"E:\\Software\\Programming\\Github\\AEDS3\\mynewDB\"");
-       
-        String filepath = MyIO.readString();
-        try
-        {
-            Huffman huff = new Huffman();
-            huff.compactDB(filepath);
-        }catch (Exception e) {
-
-        }
-
-
-        /*
         int option = -1;
 
         MyIO.println("__/\\\\\\________/\\\\\\___________________________________________________/\\\\\\\\\\\\\\\\\\\\\\\\_____/\\\\\\\\\\\\\\\\\\\\\\\\\\___        ");
@@ -69,7 +37,7 @@ public class Main {
         MyIO.println("       ______\\//\\\\\\_______\\/\\\\\\____\\//\\\\\\\\\\___\\//\\\\\\\\\\\\\\\\/\\\\__\\///\\\\\\\\\\/___\\/\\\\\\\\\\\\\\\\\\\\\\\\/___\\/\\\\\\\\\\\\\\\\\\\\\\\\\\/__ ");
         MyIO.println("        _______\\///________\\///______\\/////_____\\////////\\//_____\\/////_____\\////////////_____\\/////////////____");
 
-        MyIO.println("\nVitaoDB - TP 2 v. 1.5.0 - R.A: 817958\n");
+        MyIO.println("\nVitaoDB - TP 3 v. 3.0.0 - R.A: 817958\n");
 
         MyIO.println("Favor copie e cole o caminho ate o arquivo de indice:");
         MyIO.println("Exemplo: \"E:\\Software\\Programming\\Github\\AEDS3\\btreeindex\"");
@@ -81,6 +49,8 @@ public class Main {
        
         String filepath = MyIO.readString();
         Crud myCrud = new Crud(filepath, indexFilepath);
+        Huffman huff = new Huffman();
+        LZW lampei = new LZW();
 
 
         while (option != 0)
@@ -96,7 +66,9 @@ public class Main {
                                       "2 -> CREATE\n" +
                                       "3 -> UPDATE\n" +
                                       "4 -> READ\n" +
-                                      "5 -> DELETE\n");
+                                      "5 -> DELETE\n" +
+                                      "6 -> COMPACTACAO\n" +
+                                      "7 -> DESCOMPACTACAO");
             option = MyIO.readInt();
 
             switch (option) {
@@ -108,7 +80,7 @@ public class Main {
                     MyIO.println("Favor copie e cole o caminho até os datasets Backup");
                     MyIO.println("Exemplo: \"E:\\Software\\Programming\\Github\\AEDS3\\Database\\t\\\"");
                     String backpath = MyIO.readString();
-                    myCrud.reloadDB(backpath);  
+                    myCrud.reloadDB(backpath, 1000);  
                     break;
                 case 2:
                     myCrud.create();
@@ -122,15 +94,116 @@ public class Main {
                 case 5:
                     myCrud.delete();
                 break;
+                case 6:
+                    try {
+                        lampei.startTimer(filepath);
+                        lampei.compressDB(filepath);
+                        lampei.stopTimer(filepath + "LZWCompressao1");
+                        MyIO.println("\n");
+                        MyIO.println("Compressao LZW -- Dados: ");
+                        lampei.printTimer();
+
+                        huff.startTimer(filepath);
+                        huff.compactDB(filepath);
+                        huff.stopTimer(filepath);
+
+                        MyIO.println("\n");
+                        MyIO.println("Compressao Huffman -- Dados: ");
+                        huff.printTimer();
+                    } catch(Exception e){
+                        MyIO.println("Erro compactacao opcao 6!");
+                        e.printStackTrace();
+                    }
+                break;
+                case 7:
+                try {
+                    lampei.startTimer(filepath);
+                    lampei.decompressDB(filepath);
+                    lampei.stopTimer(filepath + "LZWCompressao1");
+                    MyIO.println("LZW - Tempo para descompressao:");
+                    lampei.printTime();
+
+                    huff.startTimer(filepath);
+                    huff.decompressDB(filepath);
+                    huff.stopTimer(filepath);
+                    MyIO.println("Huffman - Tempo para descompressao:");
+                    huff.printTime();
+
+                } catch(Exception e){
+                    MyIO.println("Erro descompactacao opcao 7!");
+                    e.printStackTrace();
+                }
+                break;
             
                 default:
                     MyIO.println("Operacao invalida.\n");
                 break;
             }
-        } // */
+        }
+    }
+
+
+    // Só para testes no meu computador! Regenera os arquivos baseado em informações já conhecidas.
+    private static final void lazyGen()
+    {
+        String filepath = "E:\\Software\\Programming\\Github\\AEDS3\\mynewDB";
+        //String filepath = "E:\\Software\\Programming\\Github\\AEDS3\\mynewDBLZW-V1-DECOMPRESSED";
+        //String filepath = "E:\\Software\\Programming\\Github\\AEDS3\\mynewDBHuffman-V1-DECOMPRESSED";
+        String indexFilePath = "E:\\Software\\Programming\\Github\\AEDS3\\btreeindex";
+
+        Crud myCrud = new Crud(filepath, indexFilePath);
+        myCrud.reloadDB("E:\\Software\\Programming\\Github\\AEDS3\\Database\\t", 100);
+
+        MyIO.println("Registros Validos Encontrados: #" + myCrud.meta.getRegNum());
+        MyIO.println("Ultimo Registro No Programa: #" + myCrud.meta.getLastId());
+        MyIO.println("Proximo ID inserido sera:  #" + myCrud.meta.getNextId());
+        MyIO.println("Numero de Lapides:  #" + myCrud.meta.getLapideNum());
+        MyIO.println("Numero de Registros Fora De Posicao (OOP):  #" + myCrud.meta.getOOPNum());
+
+        LZW lampei = new LZW();
+        try {
+            lampei.startTimer(filepath);
+            lampei.compressDB(filepath);
+            lampei.stopTimer(filepath + "LZWCompressao1");
+            MyIO.println();
+            MyIO.println("Compressao LZW -- Dados: ");
+            lampei.printTimer();
+
+            lampei.startTimer(filepath + "LZWCompressao1");
+            lampei.decompressDB(filepath);
+            lampei.stopTimer(filepath + "LZWCompressao1Descompressao");
+            MyIO.println();
+            MyIO.println("Descompressao LZW -- Dados: ");
+            lampei.printTimer();
+        
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+        
+        Huffman huff = new Huffman();
+        try {
+            huff.startTimer(filepath);
+            huff.compactDB(filepath);
+            huff.stopTimer(filepath + "HuffmanCompressao1");
+            MyIO.println();
+            MyIO.println("Compressao Huffman -- Dados: ");
+            huff.printTimer();
+        
+        
+            huff.startTimer(filepath + "HuffmanCompressao1");
+            huff.decompressDB(filepath);
+            huff.stopTimer(filepath + "HuffmanCompressao1Descompressao");
+            MyIO.println();
+            MyIO.println("Descompressao Huffman -- Dados: ");
+            huff.printTimer();
+        
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+        
+        int a = 24;
     }
 }
-
 
 /*
  * Victor Hugo Braz - 817958
@@ -250,4 +323,8 @@ public class Main {
  *      Main -> Previsão de testes para indice B adicionada e comentada no inicio
  *      MyBTree.java -> Metodos de remoção e inserção testados e aperfeiçoados.
  *      Crud -> Crud sempre tenta buscar pelo índice, e depois linearmente, se não existir.
+ *   05/20/2024 16:30 UTC-3 - 3.0.0
+ *      Metodos de compressão Huffman e LZW.
+ * 
+ * 
  */

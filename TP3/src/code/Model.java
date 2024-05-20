@@ -298,16 +298,16 @@ public class Model {
 
     public String printCompact()
     {
-        return (    ""    + db_id             + byteSize              
-                          + lapide            + video_id               
-                          + trending_date     + title                  
-                          + channel_title     + category_id            
-                          + publish_time      + tags                   
-                          + views             + likes                  
-                          + dislikes          + comment_count          
-                          + thumbnail_link    + comments_disabled      
-                          + ratings_disabled  + video_error_or_removed 
-                          + getCountry()      + description);
+        return (    ""    + db_id            + ','  + byteSize               + ','
+                          + lapide           + ','  + video_id               + ',' 
+                          + trending_date    + ','  + title                  + ',' 
+                          + channel_title    + ','  + category_id            + ',' 
+                          + publish_time     + ','  + tags                   + ',' 
+                          + views            + ','  + likes                  + ',' 
+                          + dislikes         + ','  + comment_count          + ',' 
+                          + thumbnail_link   + ','  + comments_disabled      + ',' 
+                          + ratings_disabled + ','  + video_error_or_removed + ',' 
+                          + getCountry()     + ','  + description + (char) 140);
     }
 
     /*
@@ -362,6 +362,36 @@ public class Model {
         this.title = a.title; this.channel_title = a.channel_title;
         this.publish_time = a.publish_time; this.tags = a.tags; this.thumbnail_link = a.thumbnail_link;
         this.description = a.description;
+    }
+
+    // Construtor usado para a base de dados comprimida.
+    public Model (String a)
+    {
+        String[] buffer = new String[2];
+        buffer[1] = a;
+        buffer = stringSplit(buffer[1], null);
+        this.db_id                       =       Long.parseLong(buffer[0]); buffer = stringSplit(buffer[1], null);
+        this.byteSize                    =     Integer.parseInt(buffer[0]); buffer = stringSplit(buffer[1], null);
+        this.lapide                      = Boolean.parseBoolean(buffer[0]); buffer = stringSplit(buffer[1], null); 
+        this.video_id                    =                      buffer[0] ; buffer = stringSplit(buffer[1], null);
+        this.trending_date               =                      buffer[0] ; buffer = stringSplit(buffer[1], null);
+        this.title                       =                      buffer[0] ; buffer = stringSplit(buffer[1], null);
+        this.channel_title               =                      buffer[0] ; buffer = stringSplit(buffer[1], null);
+        this.category_id                 =       Byte.parseByte(buffer[0]); buffer = stringSplit(buffer[1], null);
+        this.publish_time                =                      buffer[0] ; buffer = stringSplit(buffer[1], null);
+        this.tags                        =                      buffer[0] ; buffer = stringSplit(buffer[1], null);
+        this.views                       =       Long.parseLong(buffer[0]); buffer = stringSplit(buffer[1], null);
+        this.likes                       =       Long.parseLong(buffer[0]); buffer = stringSplit(buffer[1], null);
+        this.dislikes                    =       Long.parseLong(buffer[0]); buffer = stringSplit(buffer[1], null);
+        this.comment_count               =     Integer.parseInt(buffer[0]); buffer = stringSplit(buffer[1], null);
+        this.thumbnail_link              =                      buffer[0] ; buffer = stringSplit(buffer[1], null);
+        this.comments_disabled           = Boolean.parseBoolean(buffer[0]); buffer = stringSplit(buffer[1], null);
+        this.ratings_disabled            = Boolean.parseBoolean(buffer[0]); buffer = stringSplit(buffer[1], null);
+        this.video_error_or_removed      = Boolean.parseBoolean(buffer[0]); buffer = stringSplit(buffer[1], null);
+        this.country = new char[2]                                        ;
+        this.country[0]                  = buffer[0].charAt(0)      ;
+        this.country[1]                  = buffer[0].charAt(1)      ;
+        this.description                 =                      buffer[1] ;
     }
 
     // Construtor padrão para a base de dados tratada.
