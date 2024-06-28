@@ -55,3 +55,12 @@ Huffman.java : Classe para a compactação Huffman
 DictionaryHash.java : Dicionario usado pela LZW.
 
 MinHeap.java : Heap Mínimo utilizado pela Huffman
+
+* TP 4: 4.0.0
+Mesma coisa de antes, mais:
+
+RSA.java
+ Algoritmo de criptografia por RSA
+
+BoyerMoore.Java
+ Classe de casamento de padrões por BoyerMoore
